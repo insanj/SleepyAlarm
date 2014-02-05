@@ -2,9 +2,8 @@ SleepyAlarm
 =======================
 
 Sleep better with your Alarms.
------------------------
 
-SleepyAlarm adds a Sleep button to the Clock app, which can auto-create alarms for the best night's sleep.
+If you have Edit Alarms installed, SleepyAlarm adds a Sleep button to the Clock app, which can auto-create alarms for the best night's sleep. If you don't, press-and-holding on the Add button will perform the same function.
 
 The human body operates on specific sleep cycles. From the second you fall asleep, to the second you wake up, you're passing in and out of different levels of light and deep slumber. That's why, even after ten hours of sleep, you can still feel more groggy than you do after a quick power-nap. So, why do we set up our alarms arbitrarily, when we could plan them out when we fall asleep?
 

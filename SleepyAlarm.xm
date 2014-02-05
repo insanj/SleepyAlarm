@@ -7,7 +7,10 @@
 -(void)showAddView;
 @end
 
-@interface TableViewController (SleepyAlarm) <UIActionSheetDelegate> 
+@interface AlarmViewController : TableViewController
+@end
+
+@interface AlarmViewController (SleepyAlarm) <UIActionSheetDelegate> 
 -(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
 @end
 
@@ -28,19 +31,33 @@
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
 
-%hook TableViewController
+%hook AlarmViewController
 
 -(void)viewWillAppear:(BOOL)animated{
     %orig();
 
-    if(!self.navigationItem.leftBarButtonItem){
+    // Using Edit Alarms (best way)...
+    if(!self.navigationItem.leftBarButtonItem){ 
         NSLog(@"[SleepyAlarm] Adding SleepyAlarm button to Alarm view...");
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage kitImageNamed:@"SleepyAlarm.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
+
+    // Vanilla app...
+    else{
+        NSLog(@"[SleepyAlarm] Adding long-press gesture to add button in Alarm view...");
+        UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(sl_sleepyPress:)];
+        [[self.navigationItem.rightBarButtonItem valueForKey:@"view"] addGestureRecognizer:longPress];
+    }
 }
 
-%new -(void)sl_sleepyPress:(UIBarButtonItem *)sender{
-    NSLog(@"[SleepyAlarm] Detected long-press on add button, showing pre-set add view...");
+%new -(void)sl_sleepyPress:(id)sender{
+    if([sender isKindOfClass:[UILongPressGestureRecognizer class]] && ((UILongPressGestureRecognizer *)sender).state == UIGestureRecognizerStateBegan)
+        NSLog(@"[SleepyAlarm] Detected SleepyAlarm long-press gesture, showing pre-set add view...");
+    else if([sender isKindOfClass:[UIBarButtonItem class]])
+        NSLog(@"[SleepyAlarm] Detected Sleep button press, showing pre-set add view...");
+    else
+        return;
+
     sl_times = [[NSMutableArray alloc] init];
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
 
@@ -77,7 +94,7 @@ static NSDate *sl_pickedTime;
     }
 }
 
-// In case you have EditAlarms installed...
+// In case you have Edit Alarms installed...
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath{
     %orig();
 

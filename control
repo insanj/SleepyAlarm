@@ -2,13 +2,9 @@ Package: com.insanj.sleepyalarm
 Name: SleepyAlarm
 Pre-Depends: firmware (>= 7.0)
 Depends: mobilesubstrate
-Version: 0.1
+Version: 1.0
 Architecture: iphoneos-arm
 Description: Sleep better with your Alarms.
- SleepyAlarm adds a Sleep button to the Clock app, which can auto-create alarms for the best night's sleep.
- The human body operates on specific sleep cycles. From the second you fall asleep, to the second you wake up, you're passing in and out of different levels of light and deep slumber. That's why, even after ten hours of sleep, you can still feel more groggy than you do after a quick power-nap. So, why do we set up our alarms arbitrarily, when we could plan them out when we fall asleep?
- SleepyAlarm makes this as easy as possible. Inspired by sleepyti.me's algorithm, which follows that a good night's sleep consists of 5-6 complete sleep cycles, and it takes the average human fourteen minutes to fall asleep, SleepyAlarm adds a simple Sleep button to the Alarms section of the Clock app. Tapping the button brings up a small picker, which automatically loads in the best times to wake up if you laid down right afterwards. Pick a time, create your alarm, and off to a lifetime of better slumbers.
- Thanks to Remy Medard for the Sleep icon, designed for the Noun Project. Full license, attribution, and source available online. 
 Maintainer: Julian Weiss <me@insanj.com>
 Author: Julian (insanj) Weiss
 Section: Tweaks
