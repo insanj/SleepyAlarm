@@ -11,6 +11,8 @@ SleepyAlarm makes this as easy as possible. Inspired by sleepyti.me's algorithm,
 
 "Sleep" icon designed by Remy Medard from the [Noun Project](http://thenounproject.com/term/sleep/10297/) under [Attribution 3.0](http://creativecommons.org/licenses/by/3.0/us/).
 
+__Commercial tweak, available from [BigBoss](http://thebigboss.org).__
+
 ---------------------------------------	
 [Creative Commons Attribution-NonCommercial 3.0 United States License](http://creativecommons.org/licenses/by-nc/3.0/us/) as of 2014:
 
