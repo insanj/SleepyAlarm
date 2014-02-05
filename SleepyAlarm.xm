@@ -1,6 +1,6 @@
 #import <UIKit/UIKit.h>
 
-/******************** Forward-Declaration and Category ********************/
+/******************** Forward-Declarations and Categories ********************/
 
 @interface TableViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 @property(readonly, nonatomic) UIBarButtonItem *addButton;
@@ -26,7 +26,7 @@
 @property(readonly, nonatomic) UIDatePicker *timePicker;
 @end
 
-/************************** TableView Injections **************************/
+/************************** AlarmView Injections **************************/
 
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;

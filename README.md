@@ -1,17 +1,7 @@
 SleepyAlarm
 =======================
 
-Sleep better with your Alarms.
-
-If you have Edit Alarms installed, SleepyAlarm adds a Sleep button to the Clock app, which can auto-create alarms for the best night's sleep. If you don't, press-and-holding on the Add button will perform the same function.
-
-The human body operates on specific sleep cycles. From the second you fall asleep, to the second you wake up, you're passing in and out of different levels of light and deep slumber. That's why, even after ten hours of sleep, you can still feel more groggy than you do after a quick power-nap. So, why do we set up our alarms arbitrarily, when we could plan them out when we fall asleep?
-
-SleepyAlarm makes this as easy as possible. Inspired by sleepyti.me's algorithm, which follows that a good night's sleep consists of 5-6 complete sleep cycles, and it takes the average human fourteen minutes to fall asleep, SleepyAlarm adds a simple Sleep button to the Alarms section of the Clock app. Tapping the button brings up a small picker, which automatically loads in the best times to wake up if you laid down right afterwards. Pick a time, create your alarm, and off to a lifetime of better slumbers.
-
-"Sleep" icon designed by Remy Medard from the [Noun Project](http://thenounproject.com/term/sleep/10297/) under [Attribution 3.0](http://creativecommons.org/licenses/by/3.0/us/).
-
-__Commercial tweak, available from [BigBoss](http://thebigboss.org).__
+Sleep better with your Alarms. Details and information available on [the official website](http://insanj.github.io/SleepyAlarm).
 
 ---------------------------------------	
 [Creative Commons Attribution-NonCommercial 3.0 United States License](http://creativecommons.org/licenses/by-nc/3.0/us/) as of 2014:
