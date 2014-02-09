@@ -2,10 +2,10 @@ Package: com.insanj.sleepyalarm
 Name: SleepyAlarm
 Pre-Depends: firmware (>= 7.0)
 Depends: mobilesubstrate
-Version: 0.1
+Version: 1.0.1
 Architecture: iphoneos-arm
 Description: Sleep better with your Alarms.
- Long-press (the add button) when creating an Alarm to auto-create one for the best night's sleep.
 Maintainer: Julian Weiss <me@insanj.com>
 Author: Julian (insanj) Weiss
 Section: Tweaks
+Icon: file:///Library/Application Support/SleepyAlarm/icon@2x.png

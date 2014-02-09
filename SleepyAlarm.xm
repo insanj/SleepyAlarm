@@ -58,22 +58,23 @@ static NSDate *sl_pickedTime;
     else
         return;
 
-    sl_times = [[NSMutableArray alloc] init];
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-
     NSDateComponents *add = [[NSDateComponents alloc] init];
     add.minute = 14;
 
     NSDate *iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:[NSDate date] options:0];
     add.minute = 90;
 
+    sl_times = [[NSMutableArray alloc] init];
     for(int i = 2; i < 8; i++){
         //add.minute = 60 * (fmod(i, 2) + 1);
         iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:iterated options:0];
         [sl_times addObject:iterated.copy];
     }
 
-    [formatter setDateFormat:@"hh:mm a"];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setLocale:[NSLocale currentLocale]];
+    [formatter setDateStyle:NSDateFormatterNoStyle];
+    [formatter setTimeStyle:NSDateFormatterShortStyle];
 
     UIActionSheet *timePicker = [[UIActionSheet alloc] initWithTitle:@"SleepyAlarm\nPick your preferred wake-up time!" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];
     for(int i = 0; i < sl_times.count; i++)
