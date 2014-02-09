@@ -2,10 +2,10 @@ Package: com.insanj.sleepyalarm
 Name: SleepyAlarm
 Pre-Depends: firmware (>= 7.0)
 Depends: mobilesubstrate
-Version: 1.0.1
+Version: 1.0.2
 Architecture: iphoneos-arm
 Description: Sleep better with your Alarms.
 Maintainer: Julian Weiss <me@insanj.com>
 Author: Julian (insanj) Weiss
 Section: Tweaks
-Icon: file:///Library/Application Support/SleepyAlarm/icon@2x.png
+Icon: file:///Library/Application Support/SleepyAlarm/icon.png
