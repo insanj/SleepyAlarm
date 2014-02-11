@@ -5,13 +5,16 @@
 #include <notify.h>
 
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
-#define SLTintColor [UIColor colorWithRed:32/255.0f green:35/255.0f blue:98/255.0f alpha:1.0f];
+#define SLTintColor [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 
 @interface UIImage (Private)
 +(UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
 @end
 
-@interface SleepyAlarmPrefsListController : PSListController
+@interface SleepyAlarmPrefsListController : PSListController{
+	UIStatusBarStyle prevStatusStyle;
+	UIBarStyle prevBarStyle;
+}
 @end
 
 @implementation SleepyAlarmPrefsListController
@@ -19,7 +22,8 @@
 -(void)viewDidLoad{
 	[super viewDidLoad];
 	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
-	[UISegmentedControl appearanceWhenContainedIn:self.class, nil].tintColor = SLTintColor;
+    [UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
+    [UIButton appearanceWhenContainedIn:self.class, nil].tintColor = SLTintColor;
 }
 
 
@@ -39,8 +43,15 @@
     [(UITableView *)self.view deselectRowAtIndexPath:((UITableView *)self.view).indexPathForSelectedRow animated:YES];
 
 	self.view.tintColor = SLTintColor;
+	self.view.backgroundColor = [UIColor blackColor];
     self.navigationController.navigationBar.tintColor = SLTintColor;
+    ((UITableView *)self.view).separatorStyle = UITableViewCellSeparatorStyleNone;
 
+    prevStatusStyle = [[UIApplication sharedApplication] statusBarStyle];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+
+    prevBarStyle = self.navigationController.navigationBar.barStyle;
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 }
 
 -(void)viewWillDisappear:(BOOL)animated {
@@ -48,6 +59,10 @@
 
 	self.view.tintColor = nil;
 	self.navigationController.navigationBar.tintColor = nil;
+    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+
+    [[UIApplication sharedApplication] setStatusBarStyle:prevStatusStyle];
+    self.navigationController.navigationBar.barStyle = prevBarStyle;
 }
 
 -(void)shareTapped:(UIBarButtonItem *)sender{
@@ -99,7 +114,7 @@
 
 @end
 
-@interface SLLogoCell : PSTableCell{
+@interface SLLogoCell : PSTableCell {
 	UIImageView *_logo;
 }
 @end
@@ -108,7 +123,7 @@
 
 -(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
-		self.backgroundColor = [UIColor clearColor];
+	//	self.separatorColor = [UIColor clearColor];
 		self.backgroundView = [[UIView alloc] init];
 
 		_logo = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]]] autorelease];
@@ -121,6 +136,9 @@
 -(void)layoutSubviews {
 	[super layoutSubviews];
 	_logo.center = CGPointMake(self.frame.size.width / 2, _logo.center.y);
+
+	for(UIView *v in self.subviews)
+		NSLog(@"---- v : %@", v);
 }
 
 @end
