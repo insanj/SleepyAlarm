@@ -56,6 +56,9 @@
 
     prevBarStyle = self.navigationController.navigationBar.barStyle;
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+
+    CGFloat offsetAmount = self.navigationController.navigationBar.frame.size.height - 10.0;
+	((UITableView *)self.view).contentInset = UIEdgeInsetsMake(-offsetAmount, 0.0, 0.0, 0.0);
 }
 
 -(void)viewWillDisappear:(BOOL)animated {
@@ -112,7 +115,6 @@
 
 -(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
-	//	self.separatorColor = [UIColor clearColor];
 		self.backgroundView = [[UIView alloc] init];
 
 		_logo = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]]] autorelease];
@@ -125,9 +127,6 @@
 -(void)layoutSubviews {
 	[super layoutSubviews];
 	_logo.center = CGPointMake(self.frame.size.width / 2, _logo.center.y);
-
-	for(UIView *v in self.subviews)
-		NSLog(@"---- v : %@", v);
 }
 
 @end
