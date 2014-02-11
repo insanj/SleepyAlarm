@@ -1,0 +1,10 @@
+{
+    entry = {
+		bundle = SleepyAlarmPrefs;
+		cell = PSLinkCell;
+		detail = SleepyAlarmPrefsListController;
+		icon = settings.png;
+		isController = 1;
+		label = "SleepyAlarm";
+    };
+}

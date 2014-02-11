@@ -10,6 +10,8 @@ SleepyAlarm_FRAMEWORKS = UIKit
 SleepyAlarm_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
+SUBPROJECTS += SleepyAlarmPrefs
+include $(THEOS_MAKE_PATH)/aggregate.mk
 
 internal-after-install::
 	install.exec "killall -9 backboardd"

@@ -8,4 +8,4 @@ Description: Sleep better with your Alarms.
 Maintainer: Julian Weiss <me@insanj.com>
 Author: Julian (insanj) Weiss
 Section: Tweaks
-Icon: file:///Library/Application Support/SleepyAlarm/icon.png
+Icon: file:///Library/PreferenceBundles/SleepyAlarmPrefs.bundle/icon.png
