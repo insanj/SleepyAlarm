@@ -107,7 +107,7 @@
 @end
 
 @interface SLLogoCell : PSTableCell {
-	UIImageView *_logo;
+	UIButton *_logo;
 }
 @end
 
@@ -117,7 +117,10 @@
 	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
 		self.backgroundView = [[UIView alloc] init];
 
-		_logo = [[[UIImageView alloc] initWithImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]]] autorelease];
+		_logo = [UIButton buttonWithType:UIButtonTypeCustom];
+		[_logo setImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+		[_logo addTarget:self action:@selector(website) forControlEvents:UIControlEventTouchUpInside];
+
 		[self addSubview:_logo];
 	}
 
@@ -126,7 +129,11 @@
 
 -(void)layoutSubviews {
 	[super layoutSubviews];
-	_logo.center = CGPointMake(self.frame.size.width / 2, _logo.center.y);
+	[_logo setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width, 205.5)];
+}
+
+-(void)website{
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
 }
 
 @end
