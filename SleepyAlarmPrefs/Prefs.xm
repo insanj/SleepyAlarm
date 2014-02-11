@@ -95,8 +95,6 @@
 	PSSpecifier *waitSpecifier = [self specifierForID:@"WaitSlider"];
 	[self setPreferenceValue:@(14.0) specifier:waitSpecifier];
 	[self reloadSpecifier:waitSpecifier];
-
-	NSLog(@"[][][][][][] resetting:%@ and %@", timesSpecifier, waitSpecifier);
 }
 
 @end

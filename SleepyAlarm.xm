@@ -58,14 +58,20 @@ static NSDate *sl_pickedTime;
     else
         return;
 
+    NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
+    CGFloat waitAmount = [[settings objectForKey:@"waitAmount"] floatValue];
+    CGFloat timesAmount = [[settings objectForKey:@"timesAmount"] floatValue];
+
     NSDateComponents *add = [[NSDateComponents alloc] init];
-    add.minute = 14;
+    add.minute = waitAmount > 0.0 ? waitAmount : 14.0;
 
     NSDate *iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:[NSDate date] options:0];
     add.minute = 90;
 
     sl_times = [[NSMutableArray alloc] init];
-    for(int i = 2; i < 8; i++){
+    
+    int count = timesAmount > 0.0 ? timesAmount : 8;
+    for(int i = 2; i < count; i++){
         //add.minute = 60 * (fmod(i, 2) + 1);
         iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:iterated options:0];
         [sl_times addObject:iterated.copy];

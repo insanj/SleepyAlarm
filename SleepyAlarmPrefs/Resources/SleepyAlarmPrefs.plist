@@ -20,12 +20,12 @@
 		<dict>
 			<key>cell</key>				<string>PSSliderCell</string>
 			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 				<string>times</string>
+			<key>key</key> 				<string>timesAmount</string>
 			<key>id</key> 				<string>TimesSlider</string>
 			<key>leftImage</key> 		<string>crescent.png</string>
 			<key>rightImage</key> 		<string>fullmoon.png</string>
-			<key>min</key> 				<real>3</real>
-			<key>max</key> 				<real>10</real>
+			<key>min</key> 				<real>5</real>
+			<key>max</key> 				<real>11</real>
 			<key>default</key> 			<real>8</real>
 		</dict>
 
@@ -38,7 +38,7 @@
 		<dict>
 			<key>cell</key>				<string>PSSliderCell</string>
 			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 				<string>wait</string>
+			<key>key</key> 				<string>waitAmount</string>
 			<key>id</key> 				<string>WaitSlider</string>
 			<key>leftImage</key> 		<string>raccoon.png</string>
 			<key>rightImage</key> 		<string>bat.png</string>
