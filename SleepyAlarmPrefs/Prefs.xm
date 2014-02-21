@@ -11,7 +11,7 @@
 @end
 
 @interface UIImage (Private)
-+(UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
++ (UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
 @end
 
 @interface SleepyAlarmPrefsListController : PSListController {
@@ -22,7 +22,7 @@
 
 @implementation SleepyAlarmPrefsListController
 
--(void)viewDidLoad{
+- (void)viewDidLoad {
 	[super viewDidLoad];
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
 
@@ -31,19 +31,19 @@
     [UILabel appearanceWhenContainedIn:self.class, nil].tintColor = SLTintColor;
 }
 
--(void)loadView{
+- (void)loadView {
 	[super loadView];
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
 }
 
--(NSArray *)specifiers{
+- (NSArray *)specifiers {
 	if(!_specifiers)
 		_specifiers = [[self loadSpecifiersFromPlistName:@"SleepyAlarmPrefs" target:self] retain];
 
 	return _specifiers;
 }
 
--(void)viewWillAppear:(BOOL)animated{
+- (void)viewWillAppear:(BOOL)animated {
     [(UITableView *)self.view deselectRowAtIndexPath:((UITableView *)self.view).indexPathForSelectedRow animated:YES];
 
 	self.view.tintColor = SLTintColor;
@@ -61,7 +61,7 @@
 	((UITableView *)self.view).contentInset = UIEdgeInsetsMake(-offsetAmount, 0.0, 0.0, 0.0);
 }
 
--(void)viewWillDisappear:(BOOL)animated {
+- (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear:animated];
 
 	self.view.tintColor = nil;
@@ -74,7 +74,7 @@
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
 }
 
--(void)shareTapped:(UIBarButtonItem *)sender{
+- (void)shareTapped:(UIBarButtonItem *)sender {
 	NSString *text = @"A better night's slumber, without a blink of trouble. SleepyAlarm by @insanj.";
 	NSURL *url = [NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"];
 
@@ -94,7 +94,7 @@
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/intent/tweet?text=%@%%20%@", URL_ENCODE(text), URL_ENCODE(url.absoluteString)]]];
 }
 
--(void)reset{
+- (void)reset {
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
 	[self setPreferenceValue:@(8.0) specifier:timesSpecifier];
 	[self reloadSpecifier:timesSpecifier];
@@ -113,7 +113,7 @@
 
 @implementation SLLogoCell
 
--(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
 		self.backgroundView = [[UIView alloc] init];
 
@@ -127,76 +127,98 @@
 	return self;
 }
 
--(void)layoutSubviews {
+- (void)layoutSubviews {
 	[super layoutSubviews];
 	[_logo setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width, 205.5)];
 }
 
--(void)website{
+- (void)website {
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
 }
 
 @end
 
-@interface SLDoubleButton : PSTableCell {
-	UIButton *_left, *_right;
+@interface SLDoubleButton : PSTableCell
+@end
+
+@interface SLDoubleButton () {
+	UIButton *_left, *_center, *_right;
 }
+
 @end
 
 @implementation SLDoubleButton
 
--(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
 	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
 		self.backgroundView = [[UIView alloc] init];
 
 		_left = [UIButton buttonWithType:UIButtonTypeCustom];
 		_left.layer.borderWidth = 1.0;
-		[_left setImage:[UIImage imageNamed:@"refresh.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+		[_left setImage:[UIImage imageNamed:@"hammer.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
 		[_left setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
 		[_left setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
-		[_left addTarget:self action:@selector(promptReset) forControlEvents:UIControlEventTouchUpInside];
+		[_left addTarget:self action:@selector(developer) forControlEvents:UIControlEventTouchUpInside];
+
+		_center = [UIButton buttonWithType:UIButtonTypeCustom];
+		_center.layer.borderWidth = 1.0;
+		[_center setImage:[UIImage imageNamed:@"reset.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+		[_center setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
+		[_center setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
+		[_center addTarget:self action:@selector(reset) forControlEvents:UIControlEventTouchUpInside];
 
 		_right = [UIButton buttonWithType:UIButtonTypeCustom];
 		_right.layer.borderWidth = 1.0;
-		[_right setImage:[UIImage imageNamed:@"owl.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+		[_right setImage:[UIImage imageNamed:@"brush.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
 		[_right setContentHorizontalAlignment:UIControlContentHorizontalAlignmentCenter];
 		[_right setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
-		[_right addTarget:self action:@selector(twitter) forControlEvents:UIControlEventTouchUpInside];
+		[_right addTarget:self action:@selector(designer) forControlEvents:UIControlEventTouchUpInside];
 
 		[self addSubview:_left];
+		[self addSubview:_center];
 		[self addSubview:_right];
 	}
 
 	return self;
 }
 
--(void)layoutSubviews {
+- (void)layoutSubviews {
 	[super layoutSubviews];
 
-	[_left setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width / 2.0, 80.0)];
-	[_right setFrame:CGRectMake(self.superview.frame.size.width / 2.0, 0.0, self.superview.frame.size.width / 2.0, 80.0)];
+	CGFloat insetWidth = CGRectGetWidth(self.superview.frame) / 3.0;
+	CGFloat insetHeight = 80.0;
+	[_left setFrame:CGRectMake(0, 0, insetWidth, insetHeight)];
+	[_center setFrame:CGRectMake(insetWidth, -1.0, insetWidth, insetHeight + 2.0)];
+	[_right setFrame:CGRectMake(2 * insetWidth, 0.0, insetWidth, insetHeight)];
 }
 
+- (void)developer {
+	[self twitter:@"insanj"]
+}
 
--(void)twitter{
+- (void)reset {
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SLReset" object:nil];
+}
+
+- (void)designer {
+	[self twitter:@"Akadi_Nor"];
+}
+
+- (void)twitter:(NSString *)user {
 	if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]])
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"tweetbot:///user_profile/insanj"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/"] stringByAppendingString:user]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"twitterrific:///profile?screen_name=insanj"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name="] stringByAppendingString:user]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"tweetings:///user?screen_name=insanj"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name="] stringByAppendingString:user]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"twitter://user?screen_name=insanj"]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name="] stringByAppendingString:user]];
 
 	else 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://mobile.twitter.com/insanj"]];
-}
-
--(void)promptReset{
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SLReset" object:nil];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/"] stringByAppendingString:user]];
 }
 
 @end

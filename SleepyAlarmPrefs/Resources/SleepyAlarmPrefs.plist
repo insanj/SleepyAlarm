@@ -4,13 +4,7 @@
 <dict>
     <key>items</key>
 	<array>
-
-		<dict>
-			<key>cell</key> 			<string>PSStaticTextCell</string>
-			<key>cellClass</key> 		<string>SLLogoCell</string>
-			<key>height</key> 			<integer>205</integer>
-		</dict>
-
+		
 		<dict>
 			<key>cell</key>			<string>PSGroupCell</string>
 			<key>label</key>		<string>Times</string>
@@ -22,8 +16,8 @@
 			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
 			<key>key</key> 				<string>timesAmount</string>
 			<key>id</key> 				<string>TimesSlider</string>
-			<key>leftImage</key> 		<string>crescent.png</string>
-			<key>rightImage</key> 		<string>fullmoon.png</string>
+			<key>leftImage</key> 		<string>bettercrescent.png</string>
+			<key>rightImage</key> 		<string>fullermoon.png</string>
 			<key>min</key> 				<real>5</real>
 			<key>max</key> 				<real>11</real>
 			<key>default</key> 			<real>8</real>
@@ -40,8 +34,8 @@
 			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
 			<key>key</key> 				<string>waitAmount</string>
 			<key>id</key> 				<string>WaitSlider</string>
-			<key>leftImage</key> 		<string>raccoon.png</string>
-			<key>rightImage</key> 		<string>bat.png</string>
+			<key>leftImage</key> 		<string>oppossum.png</string>
+			<key>rightImage</key> 		<string>betterbat.png</string>
 			<key>min</key> 				<real>10</real>
 			<key>max</key> 				<real>20</real>
 			<key>default</key> 			<real>14</real>
