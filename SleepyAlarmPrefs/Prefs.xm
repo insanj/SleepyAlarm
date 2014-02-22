@@ -20,7 +20,6 @@
 @interface SleepyAlarmPrefsListController () {
 	UIStatusBarStyle prevStatusStyle;
 	UIBarStyle prevBarStyle;
-	UIButton *_banner;
 }
 
 @end
@@ -39,12 +38,6 @@
 - (void)loadView {
 	[super loadView];
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
-
-	_banner = [UIButton buttonWithType:UIButtonTypeCustom];
-	_banner.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	[_banner setImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
-	[_banner addTarget:self action:@selector(website) forControlEvents:UIControlEventTouchUpInside];
-	[self.view addSubview:_banner];
 }
 
 - (NSArray *)specifiers {
@@ -69,16 +62,6 @@
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 
     [super viewWillAppear:animated];
-    
-    // Partially born from the badass HBANG preference banners (thanks to thekirbylover!)
-	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
-		CGFloat headerHeight = CGRectGetHeight(self.navigationController.navigationBar.frame) + _banner.currentImage.size.height + 20.0;
-
-		((UITableView *)self.view).contentInset = UIEdgeInsetsMake(headerHeight + 40.0, 0, 0, 0);
-		((UITableView *)self.view).contentOffset = CGPointMake(0, -headerHeight);
-
-		_banner.frame = CGRectMake(0.0, -headerHeight, CGRectGetWidth(self.view.frame), headerHeight);
-	});
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -92,14 +75,6 @@
     self.navigationController.navigationBar.barStyle = prevBarStyle;
 
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
-}
-
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-	CGRect headerFrame = _banner.frame;
-	headerFrame.origin.y = scrollView.contentOffset.y;
-	headerFrame.size.height = -scrollView.contentOffset.y;
-	_banner.frame = headerFrame;
 }
 
 - (void)shareTapped:(UIBarButtonItem *)sender {
@@ -122,10 +97,6 @@
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/intent/tweet?text=%@%%20%@", URL_ENCODE(text), URL_ENCODE(url.absoluteString)]]];
 }
 
-- (void)website {
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
-}
-
 - (void)reset {
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
 	[self setPreferenceValue:@(8.0) specifier:timesSpecifier];
@@ -138,6 +109,42 @@
 
 - (void)dealloc{
 	[super dealloc];
+}
+
+@end
+
+@interface SLBannerButton : PSTableCell
+@end
+
+@interface SLBannerButton () {
+	UIButton *_button;
+}
+
+@end
+
+@implementation SLBannerButton
+
+-(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
+		self.backgroundView = [[UIView alloc] init];
+
+		_button = [UIButton buttonWithType:UIButtonTypeCustom];
+		[_button setImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+		[_button addTarget:self action:@selector(website) forControlEvents:UIControlEventTouchUpInside];
+
+		[self addSubview:_button];
+	}
+
+	return self;
+}
+
+-(void)layoutSubviews {
+	[super layoutSubviews];
+	[_button setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width, 205.5)];
+}
+
+-(void)website{
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
 }
 
 @end

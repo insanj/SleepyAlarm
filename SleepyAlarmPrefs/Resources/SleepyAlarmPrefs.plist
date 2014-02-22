@@ -4,7 +4,17 @@
 <dict>
     <key>items</key>
 	<array>
-		
+		<dict>
+			<key>cell</key>			<string>PSGroupCell</string>
+			<key>label</key>		<string>Public Release 1.1.1</string>
+		</dict>
+
+		<dict>
+			<key>cell</key> 			<string>PSStaticTextCell</string>
+			<key>cellClass</key> 		<string>SLBannerButton</string>
+			<key>height</key> 			<integer>205</integer>
+		</dict>
+
 		<dict>
 			<key>cell</key>			<string>PSGroupCell</string>
 			<key>label</key>		<string>Times</string>
