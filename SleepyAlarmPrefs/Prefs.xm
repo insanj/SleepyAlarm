@@ -5,7 +5,7 @@
 #include <notify.h>
 
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
-#define SLTintColor [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
+#define SLTintColor [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f]
 
 @interface NSDistributedNotificationCenter : NSNotificationCenter
 @end
@@ -14,10 +14,15 @@
 + (UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
 @end
 
-@interface SleepyAlarmPrefsListController : PSListController {
+@interface SleepyAlarmPrefsListController : PSListController
+@end
+
+@interface SleepyAlarmPrefsListController () {
 	UIStatusBarStyle prevStatusStyle;
 	UIBarStyle prevBarStyle;
+	UIButton *_banner;
 }
+
 @end
 
 @implementation SleepyAlarmPrefsListController
@@ -34,6 +39,12 @@
 - (void)loadView {
 	[super loadView];
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
+
+	_banner = [UIButton buttonWithType:UIButtonTypeCustom];
+	_banner.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+	[_banner setImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
+	[_banner addTarget:self action:@selector(website) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:_banner];
 }
 
 - (NSArray *)specifiers {
@@ -57,8 +68,17 @@
     prevBarStyle = self.navigationController.navigationBar.barStyle;
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 
-    CGFloat offsetAmount = self.navigationController.navigationBar.frame.size.height - 10.0;
-	((UITableView *)self.view).contentInset = UIEdgeInsetsMake(-offsetAmount, 0.0, 0.0, 0.0);
+    [super viewWillAppear:animated];
+    
+    // Partially born from the badass HBANG preference banners (thanks to thekirbylover!)
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0), dispatch_get_main_queue(), ^{
+		CGFloat headerHeight = CGRectGetHeight(self.navigationController.navigationBar.frame) + _banner.currentImage.size.height + 20.0;
+
+		((UITableView *)self.view).contentInset = UIEdgeInsetsMake(headerHeight + 40.0, 0, 0, 0);
+		((UITableView *)self.view).contentOffset = CGPointMake(0, -headerHeight);
+
+		_banner.frame = CGRectMake(0.0, -headerHeight, CGRectGetWidth(self.view.frame), headerHeight);
+	});
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -72,6 +92,14 @@
     self.navigationController.navigationBar.barStyle = prevBarStyle;
 
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
+}
+
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+	CGRect headerFrame = _banner.frame;
+	headerFrame.origin.y = scrollView.contentOffset.y;
+	headerFrame.size.height = -scrollView.contentOffset.y;
+	_banner.frame = headerFrame;
 }
 
 - (void)shareTapped:(UIBarButtonItem *)sender {
@@ -94,6 +122,10 @@
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/intent/tweet?text=%@%%20%@", URL_ENCODE(text), URL_ENCODE(url.absoluteString)]]];
 }
 
+- (void)website {
+	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
+}
+
 - (void)reset {
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
 	[self setPreferenceValue:@(8.0) specifier:timesSpecifier];
@@ -104,36 +136,8 @@
 	[self reloadSpecifier:waitSpecifier];
 }
 
-@end
-
-@interface SLLogoCell : PSTableCell {
-	UIButton *_logo;
-}
-@end
-
-@implementation SLLogoCell
-
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
-		self.backgroundView = [[UIView alloc] init];
-
-		_logo = [UIButton buttonWithType:UIButtonTypeCustom];
-		[_logo setImage:[UIImage imageNamed:@"banner.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
-		[_logo addTarget:self action:@selector(website) forControlEvents:UIControlEventTouchUpInside];
-
-		[self addSubview:_logo];
-	}
-
-	return self;
-}
-
-- (void)layoutSubviews {
-	[super layoutSubviews];
-	[_logo setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width, 205.5)];
-}
-
-- (void)website {
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
+- (void)dealloc{
+	[super dealloc];
 }
 
 @end
@@ -193,7 +197,7 @@
 }
 
 - (void)developer {
-	[self twitter:@"insanj"]
+	[self twitter:@"insanj"];
 }
 
 - (void)reset {
@@ -206,19 +210,23 @@
 
 - (void)twitter:(NSString *)user {
 	if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]])
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/"] stringByAppendingString:user]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/" stringByAppendingString:user]]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name="] stringByAppendingString:user]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name=" stringByAppendingString:user]]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name="] stringByAppendingString:user]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name=" stringByAppendingString:user]]];
 
 	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]]) 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name="] stringByAppendingString:user]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name=" stringByAppendingString:user]]];
 
 	else 
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/"] stringByAppendingString:user]];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:user]]];
+}
+
+- (void)dealloc{
+	[super dealloc];
 }
 
 @end
