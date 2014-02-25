@@ -39,7 +39,7 @@ static NSDate *sl_pickedTime;
     // Using Edit Alarms (best way)...
     if(!self.navigationItem.leftBarButtonItem){ 
         NSLog(@"[SleepyAlarm] Adding SleepyAlarm button to Alarm view...");
-        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage kitImageNamed:@"SleepyAlarm.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
+        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/cloud.png"]] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
 
     // Vanilla app...
