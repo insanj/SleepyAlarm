@@ -33,7 +33,6 @@
 	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
     [UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
     [UILabel appearanceWhenContainedIn:self.class, nil].tintColor = SLTintColor;
- 	[[UISlider appearanceWhenContainedIn:self.class, nil] setThumbImage:[UIImage imageNamed:@"thumb.png" inBundle:[NSBundle bundleForClass:self.class]] forState:UIControlStateNormal];
 }
 
 - (void)loadView {
