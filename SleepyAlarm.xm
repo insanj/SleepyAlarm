@@ -78,7 +78,7 @@ static NSDate *sl_pickedTime;
 %new - (void)willPresentActionSheet:(UIActionSheet *)actionSheet {
     for (int i = 0; i < actionSheet.subviews.count; i++) {
         UIView *v = actionSheet.subviews[i];
-        if ([v isKindOfClass:[UIButton class]]) {
+        if ([v isKindOfClass:[UIButton class]] && ![((UIButton *)v).titleLabel.text isEqualToString:@"Cancel"]) {
             switch (i) {
                 default:
                     break;
