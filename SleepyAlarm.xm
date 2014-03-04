@@ -1,35 +1,13 @@
-#import <UIKit/UIKit.h>
+#import "SleepyAlarm.h"
 
-/******************** Forward-Declarations and Categories ********************/
-
-@interface TableViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
-@property(readonly, nonatomic) UIBarButtonItem *addButton;
-- (void)showAddView;
-@end
-
-@interface AlarmViewController : TableViewController
-@end
-
-@interface AlarmViewController (SleepyAlarm) <UIActionSheetDelegate> 
+@interface AlarmViewController (SleepyAlarm) <UIActionSheetDelegate>
 - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
 @end
 
-@interface UIImage (Private)
-+ (UIImage *)kitImageNamed:(NSString *)name;
-@end
-
-@interface EditAlarmViewController
-- (id)initWithAlarm:(id)arg1;
-@end
-
-@interface EditAlarmView : UIView
-@property(readonly, nonatomic) UIDatePicker *timePicker;
-@end
-
-/************************** AlarmView Injections **************************/
-
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
+
+/************************** AlarmView Injections **************************/
 
 %hook AlarmViewController
 
@@ -37,7 +15,7 @@ static NSDate *sl_pickedTime;
     %orig();
 
     // Using Edit Alarms (best way)...
-    if (!self.navigationItem.leftBarButtonItem) { 
+    if (!self.navigationItem.leftBarButtonItem) {
         NSLog(@"[SleepyAlarm] Adding SleepyAlarm button to Alarm view...");
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/cloud.png"]] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
@@ -51,15 +29,15 @@ static NSDate *sl_pickedTime;
 }
 
 %new - (void)sl_sleepyPress:(id)sender {
-    if ([sender isKindOfClass:[UILongPressGestureRecognizer class]] && ((UILongPressGestureRecognizer *)sender).state == UIGestureRecognizerStateBegan){
+    if ([sender isKindOfClass:[UILongPressGestureRecognizer class]] && ((UILongPressGestureRecognizer *)sender).state == UIGestureRecognizerStateBegan) {
         NSLog(@"[SleepyAlarm] Detected SleepyAlarm long-press gesture, showing pre-set add view...");
     }
 
-    else if([sender isKindOfClass:[UIBarButtonItem class]]){
+    else if ([sender isKindOfClass:[UIBarButtonItem class]]) {
         NSLog(@"[SleepyAlarm] Detected Sleep button press, showing pre-set add view...");
     }
 
-    else{   // Preventative (goto fail;) brackets
+    else {   // Preventative (goto fail;) brackets
         return;
     }
 
@@ -74,7 +52,7 @@ static NSDate *sl_pickedTime;
     add.minute = 90;
 
     sl_times = [[NSMutableArray alloc] init];
-    
+
     int count = timesAmount > 0.0 ? timesAmount : 8;
     for(int i = 2; i < count; i++) {
         //add.minute = 60 * (fmod(i, 2) + 1);
@@ -95,6 +73,27 @@ static NSDate *sl_pickedTime;
     [timePicker addButtonWithTitle:@"Cancel"];
     [timePicker setCancelButtonIndex:sl_times.count];
     [timePicker showInView:self.view];
+}
+
+%new - (void)willPresentActionSheet:(UIActionSheet *)actionSheet {
+    for (int i = 0; i < actionSheet.subviews.count; i++) {
+        UIView *v = actionSheet.subviews[i];
+        if ([v isKindOfClass:[UIButton class]]) {
+            switch (i) {
+                default:
+                    break;
+                case 5:
+                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:153/255.0f green:204/255.0f blue:103/255.0f alpha:1.0f] forState:UIControlStateNormal];
+                    break;
+                case 6:
+                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:32/255.0f green:204/255.0f blue:53/255.0f alpha:1.0f] forState:UIControlStateNormal];
+                    break;
+                case 7:
+                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:41/255.0f green:209/255.0f blue:68/255.0f alpha:1.0f] forState:UIControlStateNormal];
+                    break;
+            }
+        }
+    }
 }
 
 %new - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
@@ -123,7 +122,7 @@ static NSDate *sl_pickedTime;
 
 %hook EditAlarmView
 
-- (void)layoutSubviews {   
+- (void)layoutSubviews {
     %orig();
 
     if (sl_pickedTime) {
