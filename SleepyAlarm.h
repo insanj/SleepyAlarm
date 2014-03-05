@@ -1,11 +1,19 @@
 #import <UIKit/UIKit.h>
 
+#define SLSETTINGS [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]]
+
 @interface TableViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 @property(readonly, nonatomic) UIBarButtonItem *addButton;
 - (void)showAddView;
 @end
 
 @interface AlarmViewController : TableViewController
+@end
+
+@interface AlarmView : UIView
+@end
+
+@interface AlarmTableViewCell : UITableViewCell
 @end
 
 @interface UIImage (Private)

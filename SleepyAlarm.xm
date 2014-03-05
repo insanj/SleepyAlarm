@@ -41,7 +41,7 @@ static NSDate *sl_pickedTime;
         return;
     }
 
-    NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
+    NSDictionary *settings = SLSETTINGS;
     CGFloat waitAmount = [[settings objectForKey:@"waitAmount"] floatValue];
     CGFloat timesAmount = [[settings objectForKey:@"timesAmount"] floatValue];
 

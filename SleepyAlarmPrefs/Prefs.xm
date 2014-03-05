@@ -32,7 +32,6 @@
 
 	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
     [UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
-    [UILabel appearanceWhenContainedIn:self.class, nil].tintColor = SLTintColor;
 }
 
 - (void)loadView {
@@ -75,6 +74,15 @@
     self.navigationController.navigationBar.barStyle = prevBarStyle;
 
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
+}
+
+- (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 {
+	PSTableCell *cell = [super tableView:arg1 cellForRowAtIndexPath:arg2];
+	if (cell.type == PSSwitchCell) {
+		((UILabel *)cell.titleLabel).textColor = [UIColor whiteColor];
+	}
+
+	return cell;
 }
 
 - (void)shareTapped:(UIBarButtonItem *)sender {
@@ -219,16 +227,16 @@
 	if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/" stringByAppendingString:user]]];
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]]) 
+	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name=" stringByAppendingString:user]]];
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]]) 
+	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name=" stringByAppendingString:user]]];
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]]) 
+	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]])
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name=" stringByAppendingString:user]]];
 
-	else 
+	else
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:user]]];
 }
 
