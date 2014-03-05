@@ -12,6 +12,7 @@ void sl_darken(BOOL should, UITableView *tableView) {
 	}
 
 	else {
+		tableView.backgroundColor = [UIColor colorWithRed:0.937255 green:0.937255 blue:0.956863 alpha:1];
 		tabBarController.tabBar.barStyle = navigationController.navigationBar.barStyle = slOriginalStyle;
 	}
 }
