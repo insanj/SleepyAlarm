@@ -4,40 +4,41 @@
 <dict>
     <key>items</key>
 	<array>
+
 		<dict>
-			<key>cell</key>				   <string>PSGroupCell</string>
-			<key>footerAlignment</key>		<integer>1</integer>
-			<key>footerText</key>		 	<string>Public Release 1.2</string>
+			<key>cell</key>				    <string>PSGroupCell</string>
+			<key>footerAlignment</key>	 	<integer>1</integer>
+			<key>footerText</key>		  	<string>Public Release 1.2</string>
 		</dict>
 
 		<dict>
-			<key>cell</key> 		  	<string>PSStaticTextCell</string>
-			<key>cellClass</key> 	 	<string>SLBannerButton</string>
-			<key>height</key> 			<integer>205</integer>
+			<key>cell</key> 		       	<string>PSStaticTextCell</string>
+			<key>cellClass</key> 	      	<string>SLBannerButton</string>
+			<key>height</key> 		     	<integer>205</integer>
 		</dict>
 
 		<dict>
-			<key>cell</key>		   <string>PSGroupCell</string>
-			<key>label</key>		  <string>Times</string>
-			<key>footerText</key> 	<string>Fewer to the left, more to the right.</string>
+			<key>cell</key>		            <string>PSGroupCell</string>
+			<key>label</key>		           <string>Times</string>
+			<key>footerText</key> 	         <string>Fewer to the left, more to the right.</string>
 		</dict>
 
 		<dict>
-			<key>cell</key>				<string>PSSliderCell</string>
-			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 				<string>timesAmount</string>
-			<key>id</key> 			 	<string>TimesSlider</string>
-			<key>leftImage</key> 		  <string>crescent.png</string>
-			<key>rightImage</key> 	 	<string>fullmoon.png</string>
-			<key>min</key> 				<real>5</real>
-			<key>max</key> 				<real>11</real>
-			<key>default</key> 			<real>8</real>
+			<key>cell</key>			    	<string>PSSliderCell</string>
+			<key>defaults</key>		    	<string>com.insanj.sleepyalarm</string>
+			<key>key</key> 			    	<string>timesAmount</string>
+			<key>id</key> 			     	<string>TimesSlider</string>
+			<key>leftImage</key> 		      <string>crescent.png</string>
+			<key>rightImage</key> 	     	<string>fullmoon.png</string>
+			<key>min</key> 			    	<real>5</real>
+			<key>max</key> 			    	<real>11</real>
+			<key>default</key> 		    	<real>8</real>
 		</dict>
 
 		<dict>
-			<key>cell</key>			 <string>PSGroupCell</string>
-			<key>label</key>		    <string>Wait</string>
-			<key>footerText</key> 	  <string>How short (left) or long (right) does it take you to fall asleep?</string>
+			<key>cell</key>			     <string>PSGroupCell</string>
+			<key>label</key>		        <string>Wait</string>
+			<key>footerText</key> 	      <string>How short (left) or long (right) does it take you to fall asleep?</string>
 		</dict>
 
 		<dict>
@@ -54,7 +55,7 @@
 
 
         <dict>
-            <key>cell</key>			     <string>PSGroupCell</string>
+            <key>cell</key>			    <string>PSGroupCell</string>
         </dict>
 
         <dict>
