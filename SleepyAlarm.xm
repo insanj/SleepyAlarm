@@ -112,7 +112,7 @@ static NSDate *sl_pickedTime;
 
     if (!self.navigationItem.leftBarButtonItem) {
         NSLog(@"[SleepyAlarm] Resetting SleepyAlarm button to Alarm view...");
-        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage kitImageNamed:@"SleepyAlarm.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
+        self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/cloud.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
 }
 
