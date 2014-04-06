@@ -10,6 +10,10 @@
 @interface AlarmViewController : TableViewController
 @end
 
+@interface AlarmViewController (SleepyAlarm)
+- (void)slShouldDarken:(BOOL)should;
+@end
+
 @interface AlarmView : UIView
 @end
 

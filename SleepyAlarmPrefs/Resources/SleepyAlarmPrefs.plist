@@ -8,7 +8,7 @@
 		<dict>
 			<key>cell</key>				    <string>PSGroupCell</string>
 			<key>footerAlignment</key>	 	<integer>1</integer>
-			<key>footerText</key>		  	<string>Public Release 1.2</string>
+			<key>footerText</key>		  	<string>Public Release 1.2.2</string>
 		</dict>
 
 		<dict>
@@ -66,6 +66,7 @@
             <key>label</key> 			  <string>Darken Alarms</string>
             <key>default</key> 			<false/>
             <key>negate</key>              <true/>
+            <key>PostNotification</key>    <string>com.insanj.sleepyalarm/Darken</string>
         </dict>
 
 		<dict>

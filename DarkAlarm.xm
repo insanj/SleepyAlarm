@@ -1,31 +1,41 @@
 #import "SleepyAlarm.h"
 
-static UIBarStyle slOriginalStyle = UIBarStyleDefault;
-void sl_darken(BOOL should, UITableView *tableView) {
+%group Darken
+
+%hook AlarmViewController
+
+%new - (void)slShouldDarken:(BOOL)should {
 	UITabBarController *tabBarController = (UITabBarController *) [UIApplication sharedApplication].keyWindow.rootViewController;
 	UINavigationController *navigationController = (UINavigationController *) tabBarController.viewControllers[1];
+	UITableView *tableView = MSHookIvar<UITableView *>(self, "_tableView");
 
-	if(should && ![[SLSETTINGS objectForKey:@"preventDarken"] boolValue]) {
+	if (should) {
 		tableView.backgroundColor = [UIColor blackColor];
-		slOriginalStyle = tabBarController.tabBar.barStyle;
 		tabBarController.tabBar.barStyle = navigationController.navigationBar.barStyle = UIBarStyleBlack;
+		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 	}
 
 	else {
 		tableView.backgroundColor = [UIColor colorWithRed:0.937255 green:0.937255 blue:0.956863 alpha:1];
-		tabBarController.tabBar.barStyle = navigationController.navigationBar.barStyle = slOriginalStyle;
+		tabBarController.tabBar.barStyle = navigationController.navigationBar.barStyle = UIBarStyleDefault;
+		[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
 	}
 }
 
-%hook AlarmViewController
+- (void)viewWillAppear:(BOOL)animated {
+	[self slShouldDarken:YES];
+	%orig(animated);
+}
 
+// If this is alone, it will graphically glitch when dismissing add view, but
+// will be effective afterwards (-willAppear alone won't work first view).
 - (void)viewDidAppear:(BOOL)animated {
-	sl_darken(YES, MSHookIvar<UITableView *>(self, "_tableView"));
+	[self slShouldDarken:YES];
 	%orig(animated);
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-	sl_darken(NO, MSHookIvar<UITableView *>(self, "_tableView"));
+	[self slShouldDarken:NO];
 	%orig(animated);
 }
 
@@ -33,31 +43,36 @@ void sl_darken(BOOL should, UITableView *tableView) {
 
 %hook AlarmTableViewCell
 
--(void)internalSetBackgroundColor:(UIColor *)arg1{
-	BOOL shouldDarken = ![[SLSETTINGS objectForKey:@"preventDarken"] boolValue];
-	%orig(shouldDarken ? [UIColor blackColor] : arg1);
+- (void)internalSetBackgroundColor:(UIColor *)arg1 {
+	%orig([UIColor blackColor]);
 
-	if([arg1 isEqual:[UIColor whiteColor]]) {
+	if ([arg1 isEqual:[UIColor whiteColor]]) {
 		AlarmView *alarmView = [self.contentView.subviews firstObject];
-		for(UIView *v in alarmView.subviews) {
-			if([v isKindOfClass:[UILabel class]]) {
-				((UILabel *)v).textColor = shouldDarken ? [UIColor whiteColor] : [UIColor darkGrayColor];
+		for (UIView *v in alarmView.subviews) {
+			if ([v isKindOfClass:[UILabel class]]) {
+				((UILabel *)v).textColor = [UIColor whiteColor];
 			}
 		}
 	}
-
 }
 
--(void)layoutSubviews{
+- (void)layoutSubviews {
 	%orig();
 
-	BOOL shouldDarken = ![[SLSETTINGS objectForKey:@"preventDarken"] boolValue];
 	AlarmView *alarmView = [self.contentView.subviews firstObject];
-	for(UIView *v in alarmView.subviews) {
-		if([v isKindOfClass:[UISwitch class]]) {
-				((UISwitch *)v).onTintColor = shouldDarken ? [UIColor redColor] : [UIColor greenColor];
+	for (UIView *v in alarmView.subviews) {
+		if ([v isKindOfClass:[UISwitch class]]) {
+			((UISwitch *)v).onTintColor = [UIColor redColor];
 		}
 	}
 }
 
 %end
+
+%end // %group Darken
+
+%ctor {
+	if (![[SLSETTINGS objectForKey:@"preventDarken"] boolValue]) {
+		%init(Darken);
+	}
+}

@@ -14,6 +14,10 @@
 + (UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
 @end
 
+static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	system("killall -9 MobileTimer");
+}
+
 @interface SleepyAlarmPrefsListController : PSListController
 @end
 
@@ -26,17 +30,14 @@
 
 @implementation SleepyAlarmPrefsListController
 
-- (void)viewDidLoad {
-	[super viewDidLoad];
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
-
-	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
-    [UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
-}
-
 - (void)loadView {
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_darkenSwitch, CFSTR("com.insanj.sleepyalarm/Darken"), NULL, 0);
+[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
+
 	[super loadView];
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
+	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
+	[UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
 }
 
 - (NSArray *)specifiers {
