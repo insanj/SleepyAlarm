@@ -1,13 +1,9 @@
 #import "SleepyAlarm.h"
 
-@interface AlarmViewController (SleepyAlarm) <UIActionSheetDelegate>
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
-@end
+/************************** AlarmView Injections **************************/
 
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
-
-/************************** AlarmView Injections **************************/
 
 %hook AlarmViewController
 

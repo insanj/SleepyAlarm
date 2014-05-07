@@ -1,4 +1,5 @@
 #import <UIKit/UIKit.h>
+#import "substrate.h"
 
 #define SLSETTINGS [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]]
 
@@ -10,8 +11,9 @@
 @interface AlarmViewController : TableViewController
 @end
 
-@interface AlarmViewController (SleepyAlarm)
+@interface AlarmViewController (SleepyAlarm) <UIActionSheetDelegate>
 - (void)slShouldDarken:(BOOL)should;
+- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex;
 @end
 
 @interface AlarmView : UIView
