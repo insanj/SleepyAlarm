@@ -2,17 +2,11 @@
 #import <Preferences/PSTableCell.h>
 #import <UIKit/UIActivityViewController.h>
 #import <Twitter/Twitter.h>
-#include <notify.h>
+#import <Foundation/NSDistributedNotificationCenter.h>
+#import <UIKit/UIImage+Private.h>
+#import <notify.h>
 
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
-#define SLTintColor [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f]
-
-@interface NSDistributedNotificationCenter : NSNotificationCenter
-@end
-
-@interface UIImage (Private)
-+ (UIImage *)imageNamed:(NSString *)named inBundle:(NSBundle *)bundle;
-@end
 
 static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
 	system("killall -9 MobileTimer");
@@ -32,28 +26,31 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 
 - (void)loadView {
 	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_darkenSwitch, CFSTR("com.insanj.sleepyalarm/Darken"), NULL, 0);
-[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
 
 	[super loadView];
+
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
-	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = SLTintColor;
+	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 	[UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
 }
 
 - (NSArray *)specifiers {
-	if(!_specifiers)
+	if (!_specifiers) {
 		_specifiers = [[self loadSpecifiersFromPlistName:@"SleepyAlarmPrefs" target:self] retain];
+	}
 
 	return _specifiers;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    [(UITableView *)self.view deselectRowAtIndexPath:((UITableView *)self.view).indexPathForSelectedRow animated:YES];
+    [[self table] deselectRowAtIndexPath:[self table].indexPathForSelectedRow animated:YES];
 
-	self.view.tintColor = SLTintColor;
-	self.view.backgroundColor = [UIColor blackColor];
-    self.navigationController.navigationBar.tintColor = SLTintColor;
-    ((UITableView *)self.view).separatorStyle = UITableViewCellSeparatorStyleNone;
+	[self table].backgroundColor = [UIColor blackColor];
+	[self table].tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
+    
+    self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
+	[self table].separatorStyle = UITableViewCellSeparatorStyleNone;
 
     prevStatusStyle = [[UIApplication sharedApplication] statusBarStyle];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
@@ -67,7 +64,8 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 - (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear:animated];
 
-	self.view.tintColor = nil;
+	[self table].tintColor = nil;
+
 	self.navigationController.navigationBar.tintColor = nil;
     self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 
@@ -78,7 +76,7 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 }
 
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 {
-	PSTableCell *cell = [super tableView:arg1 cellForRowAtIndexPath:arg2];
+	PSTableCell *cell = (PSTableCell *)[super tableView:arg1 cellForRowAtIndexPath:arg2];
 	if (cell.type == PSSwitchCell) {
 		((UILabel *)cell.titleLabel).textColor = [UIColor whiteColor];
 	}
@@ -90,20 +88,21 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 	NSString *text = @"A better night's slumber, without a blink of trouble. SleepyAlarm by @insanj.";
 	NSURL *url = [NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"];
 
-	if(%c(UIActivityViewController)){
+	if (%c(UIActivityViewController)) {
 		UIActivityViewController *viewController = [[[%c(UIActivityViewController) alloc] initWithActivityItems:[NSArray arrayWithObjects:text, url, nil] applicationActivities:nil] autorelease];
 		[self.navigationController presentViewController:viewController animated:YES completion:NULL];
 	}
 
-	else if (%c(TWTweetComposeViewController) && [TWTweetComposeViewController canSendTweet]){
+	else if (%c(TWTweetComposeViewController) && [TWTweetComposeViewController canSendTweet]) {
 		TWTweetComposeViewController *viewController = [[[TWTweetComposeViewController alloc] init] autorelease];
 		viewController.initialText = text;
 		[viewController addURL:url];
 		[self.navigationController presentViewController:viewController animated:YES completion:NULL];
 	}
 
-	else
+	else {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/intent/tweet?text=%@%%20%@", URL_ENCODE(text), URL_ENCODE(url.absoluteString)]]];
+	}
 }
 
 - (void)reset {
@@ -114,10 +113,6 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 	PSSpecifier *waitSpecifier = [self specifierForID:@"WaitSlider"];
 	[self setPreferenceValue:@(14.0) specifier:waitSpecifier];
 	[self reloadSpecifier:waitSpecifier];
-}
-
-- (void)dealloc{
-	[super dealloc];
 }
 
 @end
@@ -133,8 +128,10 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 
 @implementation SLBannerButton
 
--(id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+	self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+
+	if (self) {
 		self.backgroundView = [[UIView alloc] init];
 
 		_button = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -147,12 +144,13 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 	return self;
 }
 
--(void)layoutSubviews {
+- (void)layoutSubviews {
 	[super layoutSubviews];
+	
 	[_button setFrame:CGRectMake(0.0, 0.0, self.superview.frame.size.width, 205.5)];
 }
 
--(void)website{
+- (void)website {
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"]];
 }
 
@@ -170,7 +168,9 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 @implementation SLDoubleButton
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-	if((self = [super initWithStyle:style reuseIdentifier:reuseIdentifier])){
+	self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
+	
+	if (self) {
 		self.backgroundView = [[UIView alloc] init];
 
 		_left = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -207,9 +207,10 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 
 	CGFloat insetWidth = CGRectGetWidth(self.superview.frame) / 3.0;
 	CGFloat insetHeight = 80.0;
-	[_left setFrame:CGRectMake(0, 0, insetWidth, insetHeight)];
-	[_center setFrame:CGRectMake(insetWidth, -1.0, insetWidth, insetHeight + 2.0)];
-	[_right setFrame:CGRectMake(2 * insetWidth, 0.0, insetWidth, insetHeight)];
+
+	_left.frame = :CGRectMake(0.0, 0.0, insetWidth, insetHeight)];
+	_center.frame = CGRectMake(insetWidth, -1.0, insetWidth, insetHeight + 2.0)];
+	_right.frame = CGRectMake(2.0 * insetWidth, 0.0, insetWidth, insetHeight)];
 }
 
 - (void)developer {
@@ -225,24 +226,25 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 }
 
 - (void)twitter:(NSString *)user {
-	if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]])
+	if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]]) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/" stringByAppendingString:user]]];
+	}
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]])
+	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]]) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name=" stringByAppendingString:user]]];
+	}
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]])
+	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]]) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name=" stringByAppendingString:user]]];
+	}
 
-	else if([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]])
+	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]]) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name=" stringByAppendingString:user]]];
+	}
 
-	else
+	else {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:user]]];
-}
-
-- (void)dealloc{
-	[super dealloc];
+	}
 }
 
 @end

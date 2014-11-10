@@ -51,7 +51,7 @@ static NSDate *sl_pickedTime;
 
     int count = timesAmount > 0.0 ? timesAmount : 8;
     for(int i = 2; i < count; i++) {
-        //add.minute = 60 * (fmod(i, 2) + 1);
+        // add.minute = 60 * (fmod(i, 2) + 1);
         iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:iterated options:0];
         [sl_times addObject:iterated.copy];
     }
@@ -93,7 +93,7 @@ static NSDate *sl_pickedTime;
 }
 
 %new - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if(buttonIndex != actionSheet.cancelButtonIndex) {
+    if (buttonIndex != actionSheet.cancelButtonIndex) {
         sl_pickedTime = sl_times[buttonIndex];
         NSLog(@"[SleepyAlarm] User picked time [%@], prompting add view...", sl_pickedTime);
 
