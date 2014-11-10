@@ -1,11 +1,12 @@
-TARGET=:clang
-ARCHS = armv7 arm64
+TARGET =: clang
+ARCHS = armv7 armv7s arm64
+
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = SleepyAlarmPrefs
-SleepyAlarmPrefs_FILES = $(wildcard *.xm)
+SleepyAlarmPrefs_FILES = SLListController.xm SLBannerButtonCell.m SLDoubleButtonCell.m
 SleepyAlarmPrefs_INSTALL_PATH = /Library/PreferenceBundles
-SleepyAlarmPrefs_FRAMEWORKS = UIKit Twitter CoreGraphics MessageUI
+SleepyAlarmPrefs_FRAMEWORKS = UIKit Twitter CoreGraphics MessageUI QuartzCore
 SleepyAlarmPrefs_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
 
 include $(THEOS_MAKE_PATH)/bundle.mk

@@ -2,7 +2,7 @@
     entry = {
 		bundle = SleepyAlarmPrefs;
 		cell = PSLinkCell;
-		detail = SleepyAlarmPrefsListController;
+		detail = SLListController;
 		icon = "settings.png";
 		isController = 1;
 		label = "SleepyAlarm";

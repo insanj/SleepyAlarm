@@ -7,13 +7,11 @@
 
 		<dict>
 			<key>cell</key>				    <string>PSGroupCell</string>
-			<key>footerAlignment</key>	 	<integer>1</integer>
-			<key>footerText</key>		  	<string>Public Release 1.2.2</string>
 		</dict>
 
 		<dict>
 			<key>cell</key> 		       	<string>PSStaticTextCell</string>
-			<key>cellClass</key> 	      	<string>SLBannerButton</string>
+			<key>cellClass</key> 	      	<string>SLBannerButtonCell</string>
 			<key>height</key> 		     	<integer>205</integer>
 		</dict>
 
@@ -53,7 +51,6 @@
 			<key>default</key> 			<real>14</real>
 		</dict>
 
-
         <dict>
             <key>cell</key>			    <string>PSGroupCell</string>
         </dict>
@@ -76,7 +73,7 @@
 
 		<dict>
 			<key>cell</key> 		  	<string>PSStaticTextCell</string>
-			<key>cellClass</key> 	 	<string>SLDoubleButton</string>
+			<key>cellClass</key> 	 	<string>SLDoubleButtonCell</string>
 			<key>height</key> 			<integer>80</integer>
 		</dict>
 
