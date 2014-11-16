@@ -37,6 +37,7 @@
 	NSMutableDictionary *mutableSavedPreferences = [[NSMutableDictionary alloc] initWithDictionary:savedPreferences];
 	[mutableSavedPreferences setObject:savedValue forKey:savedValueKey];
 	[mutableSavedPreferences writeToFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist" atomically:YES];
+	[mutableSavedPreferences release];
 }
 
 @end

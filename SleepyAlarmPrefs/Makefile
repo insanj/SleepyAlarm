@@ -8,6 +8,7 @@ SleepyAlarmPrefs_FILES = SLListController.xm $(wildcard *.m)
 SleepyAlarmPrefs_INSTALL_PATH = /Library/PreferenceBundles
 SleepyAlarmPrefs_FRAMEWORKS = UIKit Twitter CoreGraphics MessageUI QuartzCore
 SleepyAlarmPrefs_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
+UIDiscreteSlider.m_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 

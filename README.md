@@ -1,6 +1,6 @@
 # [SleepyAlarm](http://insanj.github.io/SleepyAlarm)
 
-Sleep better with your Alarms. Details and information available on [the official website](http://insanj.github.io/SleepyAlarm). Created and designed by [Julian Weiss](http://twitter.com/insanj), graphics entirely by [Kyle Paul](http://twitter.com/Akadi_Nor).
+Sleep better with your Alarms. Details and information available on [the official website](http://insanj.github.io/SleepyAlarm). Created and designed by [Julian Weiss](http://twitter.com/insanj), graphics entirely by [Kyle Paul](http://twitter.com/Pronounced_Nor).
 
 Currently supports all devices and versions of iOS 7 — 8.
 

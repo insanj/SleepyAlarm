@@ -65,7 +65,7 @@
 }
 
 - (void)designer {
-	[self twitter:@"Akadi_Nor"];
+	[self twitter:@"Pronounced_Nor"];
 }
 
 - (void)twitter:(NSString *)user {
