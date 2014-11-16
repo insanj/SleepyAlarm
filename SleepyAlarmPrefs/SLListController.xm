@@ -5,8 +5,12 @@
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
 #define IOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
-static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-	system("killall -9 MobileTimer");
+static void sl_timesUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SleepyAlarm.TimesUpdate" object:nil];
+}
+
+static void sl_waitUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SleepyAlarm.WaitUpdate" object:nil];
 }
 
 @interface SLListController () {
@@ -19,7 +23,8 @@ static void sl_darkenSwitch(CFNotificationCenterRef center, void *observer, CFSt
 @implementation SLListController
 
 - (void)loadView {
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_darkenSwitch, CFSTR("com.insanj.sleepyalarm/Darken"), NULL, 0);
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_timesUpdate, CFSTR("com.insanj.sleepyalarm/times"), NULL, 0);
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_waitUpdate, CFSTR("com.insanj.sleepyalarm/wait"), NULL, 0);
 	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
 
 	[super loadView];
