@@ -3,6 +3,7 @@
 #import "substrate.h"
 
 #define SLSETTINGS [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]]
+#define SLLog(fmt, ...) NSLog((@"%s[SleepyAlarm]" fmt @"%s"), "\e[0;35m", ##__VA_ARGS__, "\x1B[0m")
 
 @interface TableViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
 

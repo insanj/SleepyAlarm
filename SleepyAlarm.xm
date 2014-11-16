@@ -12,13 +12,13 @@ static NSDate *sl_pickedTime;
 
     // Using Edit Alarms (best way)...
     if (!self.navigationItem.leftBarButtonItem) {
-        NSLog(@"[SleepyAlarm] Adding SleepyAlarm button to Alarm view...");
+        SLLog(@"Adding SleepyAlarm button to Alarm view...");
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/cloud.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
 
     // Vanilla app...
     else {
-        NSLog(@"[SleepyAlarm] Adding long-press gesture to add button in Alarm view...");
+        SLLog(@"Adding long-press gesture to add button in Alarm view...");
         UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(sl_sleepyPress:)];
         [[self.navigationItem.rightBarButtonItem valueForKey:@"view"] addGestureRecognizer:longPress];
     }
@@ -26,11 +26,11 @@ static NSDate *sl_pickedTime;
 
 %new - (void)sl_sleepyPress:(id)sender {
     if ([sender isKindOfClass:[UILongPressGestureRecognizer class]] && ((UILongPressGestureRecognizer *)sender).state == UIGestureRecognizerStateBegan) {
-        NSLog(@"[SleepyAlarm] Detected SleepyAlarm long-press gesture, showing pre-set add view...");
+        SLLog(@"Detected SleepyAlarm long-press gesture, showing pre-set add view...");
     }
 
     else if ([sender isKindOfClass:[UIBarButtonItem class]]) {
-        NSLog(@"[SleepyAlarm] Detected Sleep button press, showing pre-set add view...");
+        SLLog(@"Detected Sleep button press, showing pre-set add view...");
     }
 
     else {   // Preventative (goto fail;) brackets
@@ -44,16 +44,16 @@ static NSDate *sl_pickedTime;
     NSDateComponents *add = [[NSDateComponents alloc] init];
     add.minute = waitAmount > 0.0 ? waitAmount : 14.0;
 
-    NSDate *iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:[NSDate date] options:0];
+    NSDate *runningTimes = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:[NSDate date] options:0];
     add.minute = 90;
 
-    sl_times = [[NSMutableArray alloc] init];
+    NSInteger timesToDisplay = timesAmount > 0.0 ? timesAmount : 8;
+    sl_times = [[NSMutableArray alloc] initWithCapacity:timesToDisplay];
 
-    int count = timesAmount > 0.0 ? timesAmount : 8;
-    for(int i = 2; i < count; i++) {
+    for (int i = 2; i < timesToDisplay; i++) {
         // add.minute = 60 * (fmod(i, 2) + 1);
-        iterated = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:iterated options:0];
-        [sl_times addObject:iterated.copy];
+        runningTimes = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:runningTimes options:0];
+        [sl_times addObject:runningTimes.copy];
     }
 
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
@@ -62,8 +62,22 @@ static NSDate *sl_pickedTime;
     [formatter setTimeStyle:NSDateFormatterShortStyle];
 
     UIActionSheet *timePicker = [[UIActionSheet alloc] initWithTitle:@"SleepyAlarm\nPick your preferred wake-up time!" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];
-    for(int i = 0; i < sl_times.count; i++) {
-        [timePicker addButtonWithTitle:[formatter stringFromDate:sl_times[i]]];
+    for (int i = 0; i < sl_times.count; i++) {
+        NSString *buttonTitle = [formatter stringFromDate:sl_times[i]];
+        switch (i) {
+            case 3:
+                buttonTitle = [NSString stringWithFormat:@"%@ 🌔", buttonTitle];
+                break;
+            case 4:
+                buttonTitle = [NSString stringWithFormat:@"%@ 🌕", buttonTitle];
+                break;   
+            case 5:
+                buttonTitle = [NSString stringWithFormat:@"%@ 🌖", buttonTitle];
+            default:
+                break; 
+        }
+
+        [timePicker addButtonWithTitle:buttonTitle];
     }
 
     [timePicker addButtonWithTitle:@"Cancel"];
@@ -71,6 +85,7 @@ static NSDate *sl_pickedTime;
     [timePicker showInView:self.view];
 }
 
+/*
 %new - (void)willPresentActionSheet:(UIActionSheet *)actionSheet {
     for (int i = 0; i < actionSheet.subviews.count; i++) {
         UIView *v = actionSheet.subviews[i];
@@ -91,11 +106,12 @@ static NSDate *sl_pickedTime;
         }
     }
 }
+*/
 
 %new - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (buttonIndex != actionSheet.cancelButtonIndex) {
         sl_pickedTime = sl_times[buttonIndex];
-        NSLog(@"[SleepyAlarm] User picked time [%@], prompting add view...", sl_pickedTime);
+        SLLog(@"User picked time [%@], prompting add view...", sl_pickedTime);
 
         sl_times = nil;
         [self showAddView];
@@ -107,7 +123,7 @@ static NSDate *sl_pickedTime;
     %orig();
 
     if (!self.navigationItem.leftBarButtonItem) {
-        NSLog(@"[SleepyAlarm] Resetting SleepyAlarm button to Alarm view...");
+        SLLog(@"Resetting SleepyAlarm button to Alarm view...");
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/cloud.png"] style:UIBarButtonItemStylePlain target:self action:@selector(sl_sleepyPress:)];
     }
 }
@@ -122,7 +138,7 @@ static NSDate *sl_pickedTime;
     %orig();
 
     if (sl_pickedTime) {
-        NSLog(@"[SleepyAlarm] Settings addAlarm's datePicker to %@.", sl_pickedTime);
+        SLLog(@"Settings addAlarm's datePicker to %@.", sl_pickedTime);
         [self.timePicker setDate:sl_pickedTime animated:YES];
         sl_pickedTime = nil;
     }
