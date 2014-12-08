@@ -1,4 +1,5 @@
 #import "SleepyAlarm.h"
+#import "KKActionSheet.h"
 
 /************************** AlarmView Injections **************************/
 
@@ -61,52 +62,29 @@ static NSDate *sl_pickedTime;
     [formatter setDateStyle:NSDateFormatterNoStyle];
     [formatter setTimeStyle:NSDateFormatterShortStyle];
 
-    UIActionSheet *timePicker = [[UIActionSheet alloc] initWithTitle:@"SleepyAlarm\nPick your preferred wake-up time!" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];
+    KKActionSheet *timePickerSheet = [[KKActionSheet alloc] initWithTitle:@"SleepyAlarm\nPick your preferred wake-up time!" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];    
+    [timePickerSheet setTitlesTextColor:[UIColor blackColor]];
+
     for (int i = 0; i < sl_times.count; i++) {
-        NSString *buttonTitle = [formatter stringFromDate:sl_times[i]];
+        [timePickerSheet addButtonWithTitle:[formatter stringFromDate:sl_times[i]]];
+        
         switch (i) {
             case 3:
-                buttonTitle = [NSString stringWithFormat:@"%@ 🌔", buttonTitle];
+                [timePickerSheet setTextColor:[UIColor colorWithRed:153/255.0  green:204/255.0 blue:103/255.0 alpha:1.0] forButtonIndex:i];
                 break;
             case 4:
-                buttonTitle = [NSString stringWithFormat:@"%@ 🌕", buttonTitle];
-                break;   
+                [timePickerSheet setTextColor:[UIColor colorWithRed:32/255.0 green:204/255.0 blue:53/255.0 alpha:1.0] forButtonIndex:i];
+                break;
             case 5:
-                buttonTitle = [NSString stringWithFormat:@"%@ 🌖", buttonTitle];
-            default:
-                break; 
-        }
-
-        [timePicker addButtonWithTitle:buttonTitle];
-    }
-
-    [timePicker addButtonWithTitle:@"Cancel"];
-    [timePicker setCancelButtonIndex:sl_times.count];
-    [timePicker showInView:self.view];
-}
-
-/*
-%new - (void)willPresentActionSheet:(UIActionSheet *)actionSheet {
-    for (int i = 0; i < actionSheet.subviews.count; i++) {
-        UIView *v = actionSheet.subviews[i];
-        if ([v isKindOfClass:[UIButton class]] && ![((UIButton *)v).titleLabel.text isEqualToString:@"Cancel"]) {
-            switch (i) {
-                default:
-                    break;
-                case 5:
-                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:153/255.0f green:204/255.0f blue:103/255.0f alpha:1.0f] forState:UIControlStateNormal];
-                    break;
-                case 6:
-                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:32/255.0f green:204/255.0f blue:53/255.0f alpha:1.0f] forState:UIControlStateNormal];
-                    break;
-                case 7:
-                    [(UIButton *)v setTitleColor:[UIColor colorWithRed:41/255.0f green:209/255.0f blue:68/255.0f alpha:1.0f] forState:UIControlStateNormal];
-                    break;
-            }
+                [timePickerSheet setTextColor:[UIColor colorWithRed:41/255.0 green:209/255.0 blue:68/255.0 alpha:1.0] forButtonIndex:i];
+                break;
         }
     }
+
+    [timePickerSheet addButtonWithTitle:@"Cancel"];
+    [timePickerSheet setCancelButtonIndex:sl_times.count];
+    [timePickerSheet showInView:self.view];
 }
-*/
 
 %new - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
     if (buttonIndex != actionSheet.cancelButtonIndex) {
