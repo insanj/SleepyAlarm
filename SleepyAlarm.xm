@@ -1,10 +1,49 @@
 #import "SleepyAlarm.h"
-#import "KKActionSheet.h"
+#import "RMPickerViewController/RMPickerViewController.h"
 
-/************************** AlarmView Injections **************************/
+/*
+  ______  ___________  ______     _______   
+ /" _  "\("     _   ")/    " \   /"      \  
+(: ( \___))__/  \\__/// ____  \ |:        | 
+ \/ \        \\_ /  /  /    ) :)|_____/   ) 
+ //  \ _     |.  | (: (____/ //  //      /  
+(:   _) \    \:  |  \        /  |:  __   \  
+ \_______)    \__|   \"_____/   |__|  \___) 
+*/
+
+static NSDictionary *sl_preferences;
+static NSDateFormatter *sl_dateFormatter;
 
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
+
+%ctor {
+    sl_dateFormatter = [[NSDateFormatter alloc] init];
+    [sl_dateFormatter setLocale:[NSLocale currentLocale]];
+    [sl_dateFormatter setDateStyle:NSDateFormatterNoStyle];
+    [sl_dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+}
+
+/*
+  ________  __    __     ______    __   __  ___       ________  __    __    _______   _______  ___________  
+ /"       )/" |  | "\   /    " \  |"  |/  \|  "|     /"       )/" |  | "\  /"     "| /"     "|("     _   ") 
+(:   \___/(:  (__)  :) // ____  \ |'  /    \:  |    (:   \___/(:  (__)  :)(: ______)(: ______) )__/  \\__/  
+ \___  \   \/      \/ /  /    ) :)|: /'        |     \___  \   \/      \/  \/    |   \/    |      \\_ /     
+  __/  \\  //  __  \\(: (____/ //  \//  /\'    |      __/  \\  //  __  \\  // ___)_  // ___)_     |.  |     
+ /" \   :)(:  (  )  :)\        /   /   /  \\   |     /" \   :)(:  (  )  :)(:      "|(:      "|    \:  |     
+(_______/  \__|  |__/  \"_____/   |___/    \___|    (_______/  \__|  |__/  \_______) \_______)     \__|                                                                                                                                                                                                                                                            
+*/
+
+@interface AlarmViewController (SleepyAlarm) <RMPickerViewControllerDelegate>
+
+- (void)sl_sleepyPress:(id)sender;
+
+- (void)pickerViewController:(RMPickerViewController *)vc didSelectRows:(NSArray  *)selectedRows;
+- (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView;
+- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component;
+- (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component;
+
+@end
 
 %hook AlarmViewController
 
@@ -25,6 +64,16 @@ static NSDate *sl_pickedTime;
     }
 }
 
+/*
+   _______   __     ______   __   ___      ___________  __     ___      ___   _______  
+  |   __ "\ |" \   /" _  "\ |/"| /  ")    ("     _   ")|" \   |"  \    /"  | /"     "| 
+  (. |__) :)||  | (: ( \___)(: |/   /      )__/  \\__/ ||  |   \   \  //   |(: ______) 
+  |:  ____/ |:  |  \/ \     |    __/          \\_ /    |:  |   /\\  \/.    | \/    |   
+  (|  /     |.  |  //  \ _  (// _  \          |.  |    |.  |  |: \.        | // ___)_  
+ /|__/ \    /\  |\(:   _) \ |: | \  \         \:  |    /\  |\ |.  \    /:  |(:      "| 
+(_______)  (__\_|_)\_______)(__|  \__)         \__|   (__\_|_)|___|\__/|___| \_______) 
+*/                                                                                    
+
 %new - (void)sl_sleepyPress:(id)sender {
     if ([sender isKindOfClass:[UILongPressGestureRecognizer class]] && ((UILongPressGestureRecognizer *)sender).state == UIGestureRecognizerStateBegan) {
         SLLog(@"Detected SleepyAlarm long-press gesture, showing pre-set add view...");
@@ -38,62 +87,66 @@ static NSDate *sl_pickedTime;
         return;
     }
 
-    NSDictionary *settings = SLSETTINGS;
-    CGFloat waitAmount = [[settings objectForKey:@"waitAmount"] floatValue];
-    CGFloat timesAmount = [[settings objectForKey:@"timesAmount"] floatValue];
+    sl_preferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
 
-    NSDateComponents *add = [[NSDateComponents alloc] init];
-    add.minute = waitAmount > 0.0 ? waitAmount : 14.0;
+    CGFloat amountOfMinutesToWait = [[sl_preferences objectForKey:@"waitAmount"] floatValue] ?: 14.0;
+    NSInteger amountOfTimesToDisplay = [[sl_preferences objectForKey:@"timesAmount"] integerValue] ?: 8;
 
-    NSDate *runningTimes = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:[NSDate date] options:0];
-    add.minute = 90;
+    NSDateComponents *startingTimeDateComponents = [[NSDateComponents alloc] init];
+    startingTimeDateComponents.minute = amountOfMinutesToWait;
 
-    NSInteger timesToDisplay = timesAmount > 0.0 ? timesAmount : 8;
-    sl_times = [[NSMutableArray alloc] initWithCapacity:timesToDisplay];
+    NSDate *iteratingWakeUpTime = [[NSCalendar currentCalendar] dateByAddingComponents:startingTimeDateComponents toDate:[NSDate date] options:0];
+    startingTimeDateComponents.minute = 90;
 
-    for (int i = 2; i < timesToDisplay; i++) {
-        // add.minute = 60 * (fmod(i, 2) + 1);
-        runningTimes = [[NSCalendar currentCalendar] dateByAddingComponents:add toDate:runningTimes options:0];
-        [sl_times addObject:runningTimes.copy];
+    sl_times = [[NSMutableArray alloc] initWithCapacity:amountOfTimesToDisplay];
+
+    for (int i = 2; i < amountOfTimesToDisplay; i++) {
+        // iteratingWakeUpTime.minute = 60 * (fmod(i, 2) + 1);
+        iteratingWakeUpTime = [[NSCalendar currentCalendar] dateByAddingComponents:startingTimeDateComponents toDate:iteratingWakeUpTime options:0];
+        [sl_times addObject:[iteratingWakeUpTime copy]];
     }
 
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setLocale:[NSLocale currentLocale]];
-    [formatter setDateStyle:NSDateFormatterNoStyle];
-    [formatter setTimeStyle:NSDateFormatterShortStyle];
-
-    KKActionSheet *timePickerSheet = [[KKActionSheet alloc] initWithTitle:@"SleepyAlarm\nPick your preferred wake-up time!" delegate:self cancelButtonTitle:nil destructiveButtonTitle:nil otherButtonTitles:nil];    
-    [timePickerSheet setTitlesTextColor:[UIColor blackColor]];
-
-    for (int i = 0; i < sl_times.count; i++) {
-        [timePickerSheet addButtonWithTitle:[formatter stringFromDate:sl_times[i]]];
-        
-        switch (i) {
-            case 3:
-                [timePickerSheet setTextColor:[UIColor colorWithRed:153/255.0  green:204/255.0 blue:103/255.0 alpha:1.0] forButtonIndex:i];
-                break;
-            case 4:
-                [timePickerSheet setTextColor:[UIColor colorWithRed:32/255.0 green:204/255.0 blue:53/255.0 alpha:1.0] forButtonIndex:i];
-                break;
-            case 5:
-                [timePickerSheet setTextColor:[UIColor colorWithRed:41/255.0 green:209/255.0 blue:68/255.0 alpha:1.0] forButtonIndex:i];
-                break;
-        }
-    }
-
-    [timePickerSheet addButtonWithTitle:@"Cancel"];
-    [timePickerSheet setCancelButtonIndex:sl_times.count];
-    [timePickerSheet showInView:self.view];
+    NSString *descriptiveHeaderString = [NSString stringWithFormat:@"SleepyAlarm\n\nPick your preferred wake up time, assuming it takes about %@ minutes for you to fall asleep", [NSNumberFormatter localizedStringFromNumber:@(amountOfMinutesToWait) numberStyle:NSNumberFormatterSpellOutStyle]];
+   
+    RMPickerViewController *sleepyAlarmPickerViewController = [RMPickerViewController pickerController];
+    sleepyAlarmPickerViewController.delegate = self;
+    sleepyAlarmPickerViewController.titleLabel.text = descriptiveHeaderString;
+    [sleepyAlarmPickerViewController show];
 }
 
-%new - (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex != actionSheet.cancelButtonIndex) {
-        sl_pickedTime = sl_times[buttonIndex];
-        SLLog(@"User picked time [%@], prompting add view...", sl_pickedTime);
+%new - (void)pickerViewController:(RMPickerViewController *)vc didSelectRows:(NSArray *)selectedRows {
+    NSInteger selectedRow = [selectedRows[0] integerValue];
+    sl_pickedTime = sl_times[selectedRow];
+    SLLog(@"User picked time [%@], prompting add view...", sl_pickedTime);
 
-        sl_times = nil;
-        [self showAddView];
+    sl_times = nil;
+    [self showAddView];
+}
+
+%new - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView {
+    return 1;
+}
+
+%new - (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component {
+    return [sl_times count];
+}
+
+%new - (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component {
+    UIColor *indicativeTextColor;
+    switch (row) {
+        default:
+            indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
+            break;
+        case 3:
+            indicativeTextColor = [UIColor colorWithRed:153/255.0  green:204/255.0 blue:102/255.0 alpha:1.0];
+            break;
+        case 4:
+        case 5:
+            indicativeTextColor =  [UIColor colorWithRed:0/255.0 green:204/255.0 blue:51/255.0 alpha:1.0];
+            break;
     }
+
+    return [[NSAttributedString alloc] initWithString:[sl_dateFormatter stringFromDate:sl_times[row]] attributes:@{ NSForegroundColorAttributeName :indicativeTextColor }];
 }
 
 // In case you have Edit Alarms installed...
@@ -108,7 +161,15 @@ static NSDate *sl_pickedTime;
 
 %end
 
-/*********************** Add (Edit) View Injections ***********************/
+/*
+      __       ________   ________            __      ___            __        _______   ___      ___ 
+     /""\     |"      "\ |"      "\          /""\    |"  |          /""\      /"      \ |"  \    /"  |
+    /    \    (.  ___  :)(.  ___  :)        /    \   ||  |         /    \    |:        | \   \  //   |
+   /' /\  \   |: \   ) |||: \   ) ||       /' /\  \  |:  |        /' /\  \   |_____/   ) /\\  \/.    |
+  //  __'  \  (| (___\ ||(| (___\ ||      //  __'  \  \  |___    //  __'  \   //      / |: \.        |
+ /   /  \\  \ |:       :)|:       :)     /   /  \\  \( \_|:  \  /   /  \\  \ |:  __   \ |.  \    /:  |
+(___/    \___)(________/ (________/     (___/    \___)\_______)(___/    \___)|__|  \___)|___|\__/|___|
+*/
 
 %hook EditAlarmView
 

@@ -1,0 +1,858 @@
+//
+//  RMPickerViewController.m
+//  RMPickerViewController
+//
+//  Created by Roland Moers on 26.10.13.
+//  Copyright (c) 2013 Roland Moers
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
+//
+
+#import "RMPickerViewController.h"
+
+/*
+ * We need RMNonRotatingViewController because Apple decided that a UIWindow adds a black background while rotating.
+ * ( http://stackoverflow.com/questions/19782944/blacked-out-interface-rotation-when-using-second-uiwindow-with-rootviewcontrolle )
+ *
+ * To work around this problem, the root view controller of our window is a RMNonRotatingPickerViewController which cannot rotate.
+ * In this case, UIWindow does not add a black background (as it is not rotating any more) and we handle the rotation
+ * ourselves.
+ */
+@interface RMNonRotatingPickerViewController : UIViewController
+
+@property (nonatomic, assign) UIInterfaceOrientation mutableInterfaceOrientation;
+
+@end
+
+@implementation RMNonRotatingPickerViewController
+
+#pragma mark - Init and Dealloc
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didRotate) name:UIDeviceOrientationDidChangeNotification object:nil];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
+    
+    [super viewDidDisappear:animated];
+}
+
+#pragma mark - Orientation
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
+- (void)didRotate {
+    [self updateUIForInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation animated:YES];
+    
+    [self setNeedsStatusBarAppearanceUpdate];
+}
+
+- (void)updateUIForInterfaceOrientation:(UIInterfaceOrientation)newOrientation animated:(BOOL)animated {
+    CGFloat duration = ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad ? 0.4f : 0.3f);
+    BOOL doubleDuration = NO;
+    
+    CGFloat angle = 0.f;
+    CGRect screenBounds = [[UIScreen mainScreen] bounds];
+    
+    if(newOrientation == UIInterfaceOrientationPortrait) {
+        angle = 0;
+        if(self.mutableInterfaceOrientation == UIInterfaceOrientationPortraitUpsideDown)
+            doubleDuration = YES;
+    } else if(newOrientation == UIInterfaceOrientationPortraitUpsideDown) {
+        angle = M_PI;
+        if(self.mutableInterfaceOrientation == UIInterfaceOrientationPortrait)
+            doubleDuration = YES;
+    } else if(newOrientation == UIInterfaceOrientationLandscapeLeft) {
+        angle = -M_PI_2;
+        if(self.mutableInterfaceOrientation == UIInterfaceOrientationLandscapeRight)
+            doubleDuration = YES;
+    } else if(newOrientation == UIInterfaceOrientationLandscapeRight) {
+        angle = M_PI_2;
+        if(self.mutableInterfaceOrientation == UIInterfaceOrientationLandscapeLeft)
+            doubleDuration = YES;
+    }
+    
+    if([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0 && UIInterfaceOrientationIsLandscape(newOrientation) && animated) {
+        screenBounds = CGRectMake(0, 0, screenBounds.size.height, screenBounds.size.width);
+    }
+    
+    if(animated) {
+        __block RMNonRotatingPickerViewController *blockself = self;
+        [UIView animateWithDuration:(doubleDuration ? duration*2 : duration) delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            blockself.view.transform = CGAffineTransformMakeRotation(angle);
+            blockself.view.frame = screenBounds;
+        } completion:^(BOOL finished) {
+        }];
+    } else {
+        self.view.transform = CGAffineTransformMakeRotation(angle);
+        self.view.frame = screenBounds;
+    }
+    
+    self.mutableInterfaceOrientation = [UIApplication sharedApplication].statusBarOrientation;
+}
+
+#pragma mark - Status Bar
+- (BOOL)prefersStatusBarHidden {
+    if([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0 && [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+        if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation))
+            return YES;
+        
+        return NO;
+    }
+    
+    return [super prefersStatusBarHidden];
+}
+
+@end
+
+#define RM_PICKER_HEIGHT_PORTRAIT 216
+#define RM_PICKER_HEIGHT_LANDSCAPE 162
+
+#import "RMPickerViewController.h"
+#import <QuartzCore/QuartzCore.h>
+
+typedef enum {
+    RMPickerViewControllerPresentationTypeWindow,
+    RMPickerViewControllerPresentationTypeViewController,
+    RMPickerViewControllerPresentationTypePopover
+} RMPickerViewControllerPresentationType;
+
+@interface RMPickerViewController () <UIPopoverControllerDelegate>
+
+@property (nonatomic, assign) RMPickerViewControllerPresentationType presentationType;
+@property (nonatomic, strong) UIWindow *window;
+@property (nonatomic, strong) UIViewController *rootViewController;
+@property (nonatomic, strong) UIView *backgroundView;
+@property (nonatomic, strong) UIPopoverController *popover;
+
+@property (nonatomic, unsafe_unretained) NSLayoutConstraint *xConstraint;
+@property (nonatomic, unsafe_unretained) NSLayoutConstraint *yConstraint;
+@property (nonatomic, unsafe_unretained) NSLayoutConstraint *widthConstraint;
+
+@property (nonatomic, strong) UIView *titleLabelContainer;
+@property (nonatomic, strong, readwrite) UILabel *titleLabel;
+
+@property (nonatomic, strong) UIView *pickerContainer;
+@property (nonatomic, readwrite, strong) UIPickerView *picker;
+@property (nonatomic, strong) NSLayoutConstraint *pickerHeightConstraint;
+
+@property (nonatomic, strong) UIView *cancelAndSelectButtonContainer;
+@property (nonatomic, strong) UIView *cancelAndSelectButtonSeperator;
+@property (nonatomic, strong) UIButton *cancelButton;
+@property (nonatomic, strong) UIButton *selectButton;
+
+@property (nonatomic, strong) UIMotionEffectGroup *motionEffectGroup;
+
+@property (nonatomic, copy) RMSelectionBlock selectedBlock;
+@property (nonatomic, copy) RMCancelBlock cancelBlock;
+
+@property (nonatomic, assign) BOOL hasBeenDismissed;
+
+@end
+
+@implementation RMPickerViewController
+
+@synthesize selectedBackgroundColor = _selectedBackgroundColor;
+
+#pragma mark - Class
++ (instancetype)pickerController {
+    return [[RMPickerViewController alloc] init];
+}
+
+static NSString *_localizedCancelTitle = @"Cancel";
+static NSString *_localizedSelectTitle = @"Select";
+
++ (NSString *)localizedTitleForCancelButton {
+    return _localizedCancelTitle;
+}
+
++ (NSString *)localizedTitleForSelectButton {
+    return _localizedSelectTitle;
+}
+
++ (void)setLocalizedTitleForCancelButton:(NSString *)newLocalizedTitle {
+    _localizedCancelTitle = newLocalizedTitle;
+}
+
++ (void)setLocalizedTitleForSelectButton:(NSString *)newLocalizedTitle {
+    _localizedSelectTitle = newLocalizedTitle;
+}
+
++ (void)showPickerViewController:(RMPickerViewController *)aPickerViewController animated:(BOOL)animated {
+    if(aPickerViewController.presentationType == RMPickerViewControllerPresentationTypeWindow) {
+        [(RMNonRotatingPickerViewController *)aPickerViewController.window.rootViewController updateUIForInterfaceOrientation:[UIApplication sharedApplication].statusBarOrientation animated:NO];
+        [aPickerViewController.window makeKeyAndVisible];
+        
+        // If we start in landscape mode also update the windows frame to be accurate
+        if([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0 && UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+            aPickerViewController.window.frame = CGRectMake(0, 0, [[UIScreen mainScreen] bounds].size.height, [[UIScreen mainScreen] bounds].size.width);
+        }
+    }
+    
+    if(aPickerViewController.presentationType != RMPickerViewControllerPresentationTypePopover) {
+        aPickerViewController.backgroundView.alpha = 0;
+        [aPickerViewController.rootViewController.view addSubview:aPickerViewController.backgroundView];
+        
+        [aPickerViewController.rootViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:aPickerViewController.backgroundView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+        [aPickerViewController.rootViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:aPickerViewController.backgroundView attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeLeading multiplier:1 constant:0]];
+        [aPickerViewController.rootViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:aPickerViewController.backgroundView attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeWidth multiplier:1 constant:0]];
+        [aPickerViewController.rootViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:aPickerViewController.backgroundView attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeHeight multiplier:1 constant:0]];
+    }
+    
+    [aPickerViewController willMoveToParentViewController:aPickerViewController.rootViewController];
+    [aPickerViewController viewWillAppear:YES];
+    
+    [aPickerViewController.rootViewController addChildViewController:aPickerViewController];
+    [aPickerViewController.rootViewController.view addSubview:aPickerViewController.view];
+    
+    [aPickerViewController viewDidAppear:YES];
+    [aPickerViewController didMoveToParentViewController:aPickerViewController.rootViewController];
+    
+    if([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+        if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+            aPickerViewController.pickerHeightConstraint.constant = RM_PICKER_HEIGHT_LANDSCAPE;
+        } else {
+            aPickerViewController.pickerHeightConstraint.constant = RM_PICKER_HEIGHT_PORTRAIT;
+        }
+    }
+    
+    aPickerViewController.xConstraint = [NSLayoutConstraint constraintWithItem:aPickerViewController.view attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeCenterX multiplier:1 constant:0];
+    aPickerViewController.yConstraint = [NSLayoutConstraint constraintWithItem:aPickerViewController.view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+    aPickerViewController.widthConstraint = [NSLayoutConstraint constraintWithItem:aPickerViewController.view attribute:NSLayoutAttributeWidth relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeWidth multiplier:1 constant:0];
+    
+    [aPickerViewController.rootViewController.view addConstraint:aPickerViewController.xConstraint];
+    [aPickerViewController.rootViewController.view addConstraint:aPickerViewController.yConstraint];
+    [aPickerViewController.rootViewController.view addConstraint:aPickerViewController.widthConstraint];
+    
+    [aPickerViewController.rootViewController.view setNeedsUpdateConstraints];
+    [aPickerViewController.rootViewController.view layoutIfNeeded];
+    
+    [aPickerViewController.rootViewController.view removeConstraint:aPickerViewController.yConstraint];
+    aPickerViewController.yConstraint = [NSLayoutConstraint constraintWithItem:aPickerViewController.view attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeBottom multiplier:1 constant:-10];
+    [aPickerViewController.rootViewController.view addConstraint:aPickerViewController.yConstraint];
+    
+    [aPickerViewController.rootViewController.view setNeedsUpdateConstraints];
+    
+    if(animated) {
+        CGFloat damping = 1.0f;
+        CGFloat duration = 0.3f;
+        if(!aPickerViewController.disableBouncingWhenShowing) {
+            damping = 0.6f;
+            duration = 1.0f;
+        }
+        
+        [UIView animateWithDuration:duration delay:0 usingSpringWithDamping:damping initialSpringVelocity:1 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction animations:^{
+            aPickerViewController.backgroundView.alpha = 1;
+            
+            [aPickerViewController.rootViewController.view layoutIfNeeded];
+        } completion:^(BOOL finished) {
+        }];
+    } else {
+        aPickerViewController.backgroundView.alpha = 0;
+        
+        [aPickerViewController.rootViewController.view layoutIfNeeded];
+    }
+}
+
++ (void)dismissPickerViewController:(RMPickerViewController *)aPickerViewController {
+    [aPickerViewController.rootViewController.view removeConstraint:aPickerViewController.yConstraint];
+    aPickerViewController.yConstraint = [NSLayoutConstraint constraintWithItem:aPickerViewController.view attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:aPickerViewController.rootViewController.view attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+    [aPickerViewController.rootViewController.view addConstraint:aPickerViewController.yConstraint];
+    
+    [aPickerViewController.rootViewController.view setNeedsUpdateConstraints];
+    
+    [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        aPickerViewController.backgroundView.alpha = 0;
+        
+        [aPickerViewController.rootViewController.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+        [aPickerViewController willMoveToParentViewController:nil];
+        [aPickerViewController viewWillDisappear:YES];
+        
+        [aPickerViewController.view removeFromSuperview];
+        [aPickerViewController removeFromParentViewController];
+        
+        [aPickerViewController didMoveToParentViewController:nil];
+        [aPickerViewController viewDidDisappear:YES];
+        
+        [aPickerViewController.backgroundView removeFromSuperview];
+        aPickerViewController.window = nil;
+        aPickerViewController.hasBeenDismissed = NO;
+    }];
+}
+
+#pragma mark - Init and Dealloc
+- (id)init {
+    self = [super init];
+    if(self) {
+        self.blurEffectStyle = UIBlurEffectStyleExtraLight;
+        
+        [self setupUIElements];
+    }
+    return self;
+}
+
+- (void)setupUIElements {
+    //Instantiate elements
+    self.titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+    
+    self.picker = [[UIPickerView alloc] initWithFrame:CGRectZero];
+    self.picker.delegate = self.delegate;
+    self.picker.dataSource = self.delegate;
+    
+    self.cancelAndSelectButtonSeperator = [[UIView alloc] initWithFrame:CGRectZero];
+    self.cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.selectButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    
+    //Setup properties of elements
+    self.titleLabel.backgroundColor = [UIColor clearColor];
+    self.titleLabel.textColor = [UIColor grayColor];
+    self.titleLabel.font = [UIFont systemFontOfSize:12];
+    self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.titleLabel.numberOfLines = 0;
+    
+    self.picker.layer.cornerRadius = 4;
+    self.picker.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [self.cancelButton setTitle:[RMPickerViewController localizedTitleForCancelButton] forState:UIControlStateNormal];
+    [self.cancelButton addTarget:self action:@selector(cancelButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    self.cancelButton.titleLabel.font = [UIFont systemFontOfSize:[UIFont buttonFontSize]];
+    self.cancelButton.layer.cornerRadius = 4;
+    self.cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.cancelButton setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+    
+    [self.selectButton setTitle:[RMPickerViewController localizedTitleForSelectButton] forState:UIControlStateNormal];
+    [self.selectButton addTarget:self action:@selector(doneButtonPressed:) forControlEvents:UIControlEventTouchUpInside];
+    self.selectButton.titleLabel.font = [UIFont boldSystemFontOfSize:[UIFont buttonFontSize]];
+    self.selectButton.layer.cornerRadius = 4;
+    self.selectButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.selectButton setContentHuggingPriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
+}
+
+- (void)setupContainerElements {
+    if(!self.disableBlurEffects) {
+        UIBlurEffect *blur = [UIBlurEffect effectWithStyle:self.blurEffectStyle];
+        UIVibrancyEffect *vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
+        
+        UIVisualEffectView *vibrancyView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+        vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        
+        self.titleLabelContainer = [[UIVisualEffectView alloc] initWithEffect:blur];
+        [((UIVisualEffectView *)self.titleLabelContainer).contentView addSubview:vibrancyView];
+    } else {
+        self.titleLabelContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    }
+    
+    if(!self.disableBlurEffects) {
+        UIBlurEffect *blur = [UIBlurEffect effectWithStyle:self.blurEffectStyle];
+        UIVibrancyEffect *vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
+        
+        UIVisualEffectView *vibrancyView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+        vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        
+        self.pickerContainer = [[UIVisualEffectView alloc] initWithEffect:blur];
+        [((UIVisualEffectView *)self.pickerContainer).contentView addSubview:vibrancyView];
+    } else {
+        self.pickerContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    }
+    
+    if(!self.disableBlurEffects) {
+        UIBlurEffect *blur = [UIBlurEffect effectWithStyle:self.blurEffectStyle];
+        UIVibrancyEffect *vibrancy = [UIVibrancyEffect effectForBlurEffect:blur];
+        
+        UIVisualEffectView *vibrancyView = [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+        vibrancyView.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+        
+        self.cancelAndSelectButtonContainer = [[UIVisualEffectView alloc] initWithEffect:blur];
+        [((UIVisualEffectView *)self.cancelAndSelectButtonContainer).contentView addSubview:vibrancyView];
+    } else {
+        self.cancelAndSelectButtonContainer = [[UIView alloc] initWithFrame:CGRectZero];
+    }
+    
+    if(!self.disableBlurEffects) {
+        [[[[[(UIVisualEffectView *)self.titleLabelContainer contentView] subviews] objectAtIndex:0] contentView] addSubview:self.titleLabel];
+        [[[[[(UIVisualEffectView *)self.pickerContainer contentView] subviews] objectAtIndex:0] contentView] addSubview:self.picker];
+        
+        [[[[[(UIVisualEffectView *)self.cancelAndSelectButtonContainer contentView] subviews] objectAtIndex:0] contentView] addSubview:self.cancelAndSelectButtonSeperator];
+        [[[[[(UIVisualEffectView *)self.cancelAndSelectButtonContainer contentView] subviews] objectAtIndex:0] contentView] addSubview:self.cancelButton];
+        [[[[[(UIVisualEffectView *)self.cancelAndSelectButtonContainer contentView] subviews] objectAtIndex:0] contentView] addSubview:self.selectButton];
+        
+        self.titleLabelContainer.backgroundColor = [UIColor clearColor];
+        self.pickerContainer.backgroundColor = [UIColor clearColor];
+        self.cancelAndSelectButtonContainer.backgroundColor = [UIColor clearColor];
+    } else {
+        [self.titleLabelContainer addSubview:self.titleLabel];
+        [self.pickerContainer addSubview:self.picker];
+        
+        [self.cancelAndSelectButtonContainer addSubview:self.cancelAndSelectButtonSeperator];
+        [self.cancelAndSelectButtonContainer addSubview:self.cancelButton];
+        [self.cancelAndSelectButtonContainer addSubview:self.selectButton];
+        
+        self.titleLabelContainer.backgroundColor = [UIColor whiteColor];
+        self.pickerContainer.backgroundColor = [UIColor whiteColor];
+        self.cancelAndSelectButtonContainer.backgroundColor = [UIColor whiteColor];
+    }
+    
+    self.titleLabelContainer.layer.cornerRadius = 4;
+    self.titleLabelContainer.clipsToBounds = YES;
+    self.titleLabelContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    self.pickerContainer.layer.cornerRadius = 4;
+    self.pickerContainer.clipsToBounds = YES;
+    self.pickerContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    self.cancelAndSelectButtonContainer.layer.cornerRadius = 4;
+    self.cancelAndSelectButtonContainer.clipsToBounds = YES;
+    self.cancelAndSelectButtonContainer.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    self.cancelAndSelectButtonSeperator.backgroundColor = [UIColor lightGrayColor];
+    self.cancelAndSelectButtonSeperator.translatesAutoresizingMaskIntoConstraints = NO;
+}
+
+- (void)setupConstraints {
+    UIView *pickerContainer = self.pickerContainer;
+    UIView *cancelSelectContainer = self.cancelAndSelectButtonContainer;
+    UIView *seperator = self.cancelAndSelectButtonSeperator;
+    UIButton *cancel = self.cancelButton;
+    UIButton *select = self.selectButton;
+    UIPickerView *picker = self.picker;
+    UIView *labelContainer = self.titleLabelContainer;
+    UILabel *label = self.titleLabel;
+    
+    NSDictionary *bindingsDict = NSDictionaryOfVariableBindings(cancelSelectContainer, seperator, pickerContainer, cancel, select, picker, labelContainer, label);
+    
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(10)-[pickerContainer]-(10)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(10)-[cancelSelectContainer]-(10)-|" options:0 metrics:nil views:bindingsDict]];
+    
+    [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:[pickerContainer]-(10)-[cancelSelectContainer(44)]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    self.pickerHeightConstraint = [NSLayoutConstraint constraintWithItem:self.pickerContainer attribute:NSLayoutAttributeHeight relatedBy:NSLayoutRelationEqual toItem:nil attribute:NSLayoutAttributeNotAnAttribute multiplier:0 constant:RM_PICKER_HEIGHT_PORTRAIT];
+    [self.view addConstraint:self.pickerHeightConstraint];
+    
+    [self.pickerContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(0)-[picker]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.cancelAndSelectButtonContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(0)-[cancel]-(0)-[seperator(1)]-(0)-[select]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.cancelAndSelectButtonContainer addConstraint:[NSLayoutConstraint constraintWithItem:self.cancelAndSelectButtonSeperator attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual toItem:self.cancelAndSelectButtonContainer attribute:NSLayoutAttributeCenterX multiplier:1 constant:0]];
+    
+    [self.pickerContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(0)-[picker]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.cancelAndSelectButtonContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(0)-[cancel]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.cancelAndSelectButtonContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(0)-[seperator]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    [self.cancelAndSelectButtonContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(0)-[select]-(0)-|" options:0 metrics:nil views:bindingsDict]];
+    
+    NSDictionary *metricsDict = @{@"TopMargin": @(self.presentationType == RMPickerViewControllerPresentationTypePopover ? 10 : 0)};
+    
+    if(self.titleLabel.text && self.titleLabel.text.length != 0) {
+        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(10)-[labelContainer]-(10)-|" options:0 metrics:nil views:bindingsDict]];
+        
+        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(TopMargin)-[labelContainer]-(10)-[pickerContainer]" options:0 metrics:metricsDict views:bindingsDict]];
+        
+        [self.titleLabelContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"|-(10)-[label]-(10)-|" options:0 metrics:nil views:bindingsDict]];
+        [self.titleLabelContainer addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(10)-[label]-(10)-|" options:0 metrics:nil views:bindingsDict]];
+    } else {
+        [self.view addConstraints:[NSLayoutConstraint constraintsWithVisualFormat:@"V:|-(TopMargin)-[pickerContainer]" options:0 metrics:metricsDict views:bindingsDict]];
+    }
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    self.view.translatesAutoresizingMaskIntoConstraints = NO;
+    self.view.backgroundColor = [UIColor clearColor];
+    self.view.layer.masksToBounds = YES;
+    
+    [self setupContainerElements];
+    
+    if(self.titleLabel.text && self.titleLabel.text.length != 0)
+        [self.view addSubview:self.titleLabelContainer];
+    
+    [self.view addSubview:self.pickerContainer];
+    [self.view addSubview:self.cancelAndSelectButtonContainer];
+    
+    [self setupConstraints];
+    
+    if(self.disableBlurEffects) {
+        if(self.tintColor) {
+            self.cancelButton.tintColor = self.tintColor;
+            self.selectButton.tintColor = self.tintColor;
+        } else {
+            self.cancelButton.tintColor = [UIColor colorWithRed:0 green:122./255. blue:1 alpha:1];
+            self.selectButton.tintColor = [UIColor colorWithRed:0 green:122./255. blue:1 alpha:1];
+        }
+    }
+    
+    if(self.backgroundColor) {
+        if(!self.disableBlurEffects) {
+            [((UIVisualEffectView *)self.titleLabelContainer).contentView setBackgroundColor:self.backgroundColor];
+            [((UIVisualEffectView *)self.pickerContainer).contentView setBackgroundColor:self.backgroundColor];
+            [((UIVisualEffectView *)self.cancelAndSelectButtonContainer).contentView setBackgroundColor:self.backgroundColor];
+        } else {
+            self.titleLabelContainer.backgroundColor = self.backgroundColor;
+            self.pickerContainer.backgroundColor = self.backgroundColor;
+            self.cancelAndSelectButtonContainer.backgroundColor = self.backgroundColor;
+        }
+    }
+    
+    if(self.selectedBackgroundColor) {
+        if(!self.disableBlurEffects) {
+            [self.cancelButton setBackgroundImage:[self imageWithColor:[self.selectedBackgroundColor colorWithAlphaComponent:0.3]] forState:UIControlStateHighlighted];
+            [self.selectButton setBackgroundImage:[self imageWithColor:[self.selectedBackgroundColor colorWithAlphaComponent:0.3]] forState:UIControlStateHighlighted];
+        } else {
+            [self.cancelButton setBackgroundImage:[self imageWithColor:self.selectedBackgroundColor] forState:UIControlStateHighlighted];
+            [self.selectButton setBackgroundImage:[self imageWithColor:self.selectedBackgroundColor] forState:UIControlStateHighlighted];
+        }
+    }
+    
+    if(!self.disableMotionEffects)
+        [self addMotionEffects];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didRotate) name:UIDeviceOrientationDidChangeNotification object:nil];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceOrientationDidChangeNotification object:nil];
+    
+    [super viewDidDisappear:animated];
+}
+
+#pragma mark - Orientation
+- (void)didRotate {
+    NSTimeInterval duration = 0.4;
+    
+    if([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
+        duration = 0.3;
+        
+        if(UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
+            self.pickerHeightConstraint.constant = RM_PICKER_HEIGHT_LANDSCAPE;
+        } else {
+            self.pickerHeightConstraint.constant = RM_PICKER_HEIGHT_PORTRAIT;
+        }
+        
+        [self.picker setNeedsUpdateConstraints];
+        [self.picker layoutIfNeeded];
+    }
+    
+    [self.rootViewController.view setNeedsUpdateConstraints];
+    __block RMPickerViewController *blockself = self;
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        [blockself.rootViewController.view layoutIfNeeded];
+    } completion:^(BOOL finished) {
+    }];
+}
+
+#pragma mark - Helper
+- (void)addMotionEffects {
+    [self.view addMotionEffect:self.motionEffectGroup];
+}
+
+- (void)removeMotionEffects {
+    [self.view removeMotionEffect:self.motionEffectGroup];
+}
+
+- (UIImage *)imageWithColor:(UIColor *)color {
+    CGRect rect = CGRectMake(0, 0, 1, 1);
+    
+    UIGraphicsBeginImageContextWithOptions(rect.size, NO, 0);
+    [color setFill];
+    UIRectFill(rect);
+    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return image;
+}
+
+#pragma mark - Properties
+- (void)setDelegate:(id<RMPickerViewControllerDelegate>)newDelegate {
+    if(newDelegate != _delegate) {
+        _delegate = newDelegate;
+        
+        self.picker.delegate = newDelegate;
+        self.picker.dataSource = newDelegate;
+    }
+}
+
+- (BOOL)disableBlurEffects {
+    if(NSClassFromString(@"UIBlurEffect") && NSClassFromString(@"UIVibrancyEffect") && NSClassFromString(@"UIVisualEffectView") && !_disableBlurEffects) {
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (void)setDisableMotionEffects:(BOOL)newDisableMotionEffects {
+    if(_disableMotionEffects != newDisableMotionEffects) {
+        _disableMotionEffects = newDisableMotionEffects;
+        
+        if([self isViewLoaded]) {
+            if(newDisableMotionEffects) {
+                [self removeMotionEffects];
+            } else {
+                [self addMotionEffects];
+            }
+        }
+    }
+}
+
+- (UIMotionEffectGroup *)motionEffectGroup {
+    if(!_motionEffectGroup) {
+        UIInterpolatingMotionEffect *verticalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.y" type:UIInterpolatingMotionEffectTypeTiltAlongVerticalAxis];
+        verticalMotionEffect.minimumRelativeValue = @(-10);
+        verticalMotionEffect.maximumRelativeValue = @(10);
+        
+        UIInterpolatingMotionEffect *horizontalMotionEffect = [[UIInterpolatingMotionEffect alloc] initWithKeyPath:@"center.x" type:UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
+        horizontalMotionEffect.minimumRelativeValue = @(-10);
+        horizontalMotionEffect.maximumRelativeValue = @(10);
+        
+        _motionEffectGroup = [UIMotionEffectGroup new];
+        _motionEffectGroup.motionEffects = @[horizontalMotionEffect, verticalMotionEffect];
+    }
+    
+    return _motionEffectGroup;
+}
+
+- (UIWindow *)window {
+    if(!_window) {
+        self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+        _window.windowLevel = UIWindowLevelStatusBar;
+        _window.rootViewController = [[RMNonRotatingPickerViewController alloc] init];
+    }
+    
+    return _window;
+}
+
+- (UIView *)backgroundView {
+    if(!_backgroundView) {
+        self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+        _backgroundView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.4];
+        _backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
+        
+        UITapGestureRecognizer *tapRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(backgroundViewTapped:)];
+        [_backgroundView addGestureRecognizer:tapRecognizer];
+    }
+    
+    return _backgroundView;
+}
+
+- (void)setTintColor:(UIColor *)newTintColor {
+    if(_tintColor != newTintColor) {
+        _tintColor = newTintColor;
+        
+        if(!self.disableBlurEffects) {
+            self.picker.tintColor = newTintColor;
+        }
+        
+        self.cancelButton.tintColor = newTintColor;
+        self.selectButton.tintColor = newTintColor;
+    }
+}
+
+- (void)setBackgroundColor:(UIColor *)newBackgroundColor {
+    if(_backgroundColor != newBackgroundColor) {
+        _backgroundColor = newBackgroundColor;
+        
+        if([self isViewLoaded]) {
+            if(!self.disableBlurEffects &&
+               [self.titleLabelContainer isKindOfClass:[UIVisualEffectView class]] &&
+               [self.pickerContainer isKindOfClass:[UIVisualEffectView class]] &&
+               [self.cancelAndSelectButtonContainer isKindOfClass:[UIVisualEffectView class]]) {
+                [((UIVisualEffectView *)self.titleLabelContainer).contentView setBackgroundColor:newBackgroundColor];
+                [((UIVisualEffectView *)self.pickerContainer).contentView setBackgroundColor:newBackgroundColor];
+                [((UIVisualEffectView *)self.cancelAndSelectButtonContainer).contentView setBackgroundColor:newBackgroundColor];
+            } else {
+                self.titleLabelContainer.backgroundColor = newBackgroundColor;
+                self.pickerContainer.backgroundColor = newBackgroundColor;
+                self.cancelAndSelectButtonContainer.backgroundColor = newBackgroundColor;
+            }
+        }
+    }
+}
+
+- (UIColor *)selectedBackgroundColor {
+    if(!_selectedBackgroundColor) {
+        self.selectedBackgroundColor = [UIColor colorWithWhite:230./255. alpha:1];
+    }
+    
+    return _selectedBackgroundColor;
+}
+
+- (void)setSelectedBackgroundColor:(UIColor *)newSelectedBackgroundColor {
+    if(_selectedBackgroundColor != newSelectedBackgroundColor) {
+        _selectedBackgroundColor = newSelectedBackgroundColor;
+        
+        if(!self.disableBlurEffects) {
+            [self.cancelButton setBackgroundImage:[self imageWithColor:[newSelectedBackgroundColor colorWithAlphaComponent:0.3]] forState:UIControlStateHighlighted];
+            [self.selectButton setBackgroundImage:[self imageWithColor:[newSelectedBackgroundColor colorWithAlphaComponent:0.3]] forState:UIControlStateHighlighted];
+        } else {
+            [self.cancelButton setBackgroundImage:[self imageWithColor:newSelectedBackgroundColor] forState:UIControlStateHighlighted];
+            [self.selectButton setBackgroundImage:[self imageWithColor:newSelectedBackgroundColor] forState:UIControlStateHighlighted];
+        }
+    }
+}
+
+#pragma mark - Presenting
+- (void)show {
+    [self showWithSelectionHandler:nil andCancelHandler:nil];
+}
+
+- (void)showWithSelectionHandler:(RMSelectionBlock)selectionBlock andCancelHandler:(RMCancelBlock)cancelBlock {
+    self.selectedBlock = selectionBlock;
+    self.cancelBlock = cancelBlock;
+    
+    self.presentationType = RMPickerViewControllerPresentationTypeWindow;
+    self.rootViewController = self.window.rootViewController;
+    
+    [RMPickerViewController showPickerViewController:self animated:YES];
+}
+
+- (void)showFromViewController:(UIViewController *)aViewController {
+    [self showFromViewController:aViewController withSelectionHandler:nil andCancelHandler:nil];
+}
+
+- (void)showFromViewController:(UIViewController *)aViewController withSelectionHandler:(RMSelectionBlock)selectionBlock andCancelHandler:(RMCancelBlock)cancelBlock {
+    if([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        if([aViewController isKindOfClass:[UITableViewController class]]) {
+            if(aViewController.navigationController) {
+                NSLog(@"Warning: -[RMPickerViewController showFromViewController:] has been called with an instance of UITableViewController as argument. Trying to use the navigation controller of the UITableViewController instance instead.");
+                aViewController = aViewController.navigationController;
+            } else {
+                NSLog(@"Error: -[RMPickerViewController showFromViewController:] has been called with an instance of UITableViewController as argument. Showing the picker view controller from an instance of UITableViewController is not possible due to some internals of UIKit. To prevent your app from crashing, showing the picker view controller will be canceled.");
+                return;
+            }
+        }
+        
+        self.selectedBlock = selectionBlock;
+        self.cancelBlock = cancelBlock;
+        
+        self.presentationType = RMPickerViewControllerPresentationTypeViewController;
+        self.rootViewController = aViewController;
+        
+        [RMPickerViewController showPickerViewController:self animated:YES];
+    } else {
+        NSLog(@"Warning: -[RMPickerViewController %@] has been called on an iPhone. This method is iPad only so we will use -[RMPickerViewController %@] instead.", NSStringFromSelector(_cmd), NSStringFromSelector(@selector(showWithSelectionHandler:andCancelHandler:)));
+        [self showWithSelectionHandler:selectionBlock andCancelHandler:cancelBlock];
+    }
+}
+
+- (void)showFromRect:(CGRect)aRect inView:(UIView *)aView {
+    [self showFromRect:aRect inView:aView withSelectionHandler:nil andCancelHandler:nil];
+}
+
+- (void)showFromRect:(CGRect)aRect inView:(UIView *)aView withSelectionHandler:(RMSelectionBlock)selectionBlock andCancelHandler:(RMCancelBlock)cancelBlock {
+    if([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        self.selectedBlock = selectionBlock;
+        self.cancelBlock = cancelBlock;
+        
+        self.presentationType = RMPickerViewControllerPresentationTypePopover;
+        CGSize fittingSize = [self.view systemLayoutSizeFittingSize:CGSizeMake(0, 0)];
+        
+        self.popover = [[UIPopoverController alloc] initWithContentViewController:self];
+        self.popover.delegate = self;
+        self.popover.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.4];
+        self.popover.popoverContentSize = CGSizeMake(fittingSize.width, fittingSize.height+10);
+        
+        [self.popover presentPopoverFromRect:aRect inView:aView permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+    } else {
+        NSLog(@"Warning: -[RMPickerViewController %@] has been called on an iPhone. This method is iPad only so we will use -[RMPickerViewController %@] instead.", NSStringFromSelector(_cmd), NSStringFromSelector(@selector(showWithSelectionHandler:andCancelHandler:)));
+        [self showWithSelectionHandler:selectionBlock andCancelHandler:cancelBlock];
+    }
+}
+
+- (void)dismiss {
+    if(self.presentationType == RMPickerViewControllerPresentationTypePopover && [[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+        self.popover.delegate = nil;
+        
+        [self.popover dismissPopoverAnimated:YES];
+        self.popover = nil;
+    } else {
+        [RMPickerViewController dismissPickerViewController:self];
+    }
+}
+
+#pragma mark - Actions
+- (IBAction)doneButtonPressed:(id)sender {
+    if(!self.hasBeenDismissed) {
+        self.hasBeenDismissed = YES;
+        
+        NSMutableArray *selectedRows = [NSMutableArray array];
+        for(NSInteger i=0 ; i<[self.picker numberOfComponents] ; i++) {
+            [selectedRows addObject:@([self.picker selectedRowInComponent:i])];
+        }
+        
+        [self.delegate pickerViewController:self didSelectRows:selectedRows];
+        if (self.selectedBlock) {
+            self.selectedBlock(self, selectedRows);
+        }
+        [self performSelector:@selector(dismiss) withObject:nil afterDelay:0.1];
+    }
+}
+
+- (IBAction)cancelButtonPressed:(id)sender {
+    if(!self.hasBeenDismissed) {
+        self.hasBeenDismissed = YES;
+        
+        if([self.delegate respondsToSelector:@selector(pickerViewControllerDidCancel:)]) {
+            [self.delegate pickerViewControllerDidCancel:self];
+        }
+        
+        if (self.cancelBlock) {
+            self.cancelBlock(self);
+        }
+        [self performSelector:@selector(dismiss) withObject:nil afterDelay:0.1];
+    }
+}
+
+- (IBAction)backgroundViewTapped:(UIGestureRecognizer *)sender {
+    if(!self.backgroundTapsDisabled && !self.hasBeenDismissed) {
+        self.hasBeenDismissed = YES;
+        
+        if([self.delegate respondsToSelector:@selector(pickerViewControllerDidCancel:)]) {
+            [self.delegate pickerViewControllerDidCancel:self];
+        }
+        
+        if (self.cancelBlock) {
+            self.cancelBlock(self);
+        }
+        [self performSelector:@selector(dismiss) withObject:nil afterDelay:0.1];
+    }
+}
+
+#pragma mark - UIPopoverController Delegates
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
+    if(!self.hasBeenDismissed) {
+        self.hasBeenDismissed = YES;
+        
+        if([self.delegate respondsToSelector:@selector(pickerViewControllerDidCancel:)]) {
+            [self.delegate pickerViewControllerDidCancel:self];
+        }
+        
+        if (self.cancelBlock) {
+            self.cancelBlock(self);
+        }
+        [self performSelector:@selector(dismiss) withObject:nil afterDelay:0.1];
+    }
+    
+    self.popover = nil;
+}
+
+@end
