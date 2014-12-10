@@ -1,32 +1,14 @@
 #import "SLListController.h"
 #import "SLBannerButtonCell.h"
 #import "SLDoubleButtonCell.h"
+#import "version.h"
 
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
 #define IOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
-static void sl_timesUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SleepyAlarm.TimesUpdate" object:nil];
-}
-
-static void sl_waitUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SleepyAlarm.WaitUpdate" object:nil];
-}
-
-@interface SLListController () {
-	UIStatusBarStyle prevStatusStyle;
-	UIBarStyle prevBarStyle;
-}
-
-@end
-
 @implementation SLListController
 
 - (void)loadView {
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_timesUpdate, CFSTR("com.insanj.sleepyalarm/times"), NULL, 0);
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_waitUpdate, CFSTR("com.insanj.sleepyalarm/wait"), NULL, 0);
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
-
 	[super loadView];
 
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
@@ -48,44 +30,38 @@ static void sl_waitUpdate(CFNotificationCenterRef center, void *observer, CFStri
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    [[self table] deselectRowAtIndexPath:[self table].indexPathForSelectedRow animated:YES];
-
-    if (IOS_8_OR_LATER) {
-		prevBarStyle = self.navigationController.navigationController.navigationBar.barStyle;
-
+    if (IS_IOS_OR_NEWER(iOS_8_0)) {
 	    self.navigationController.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 		self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 	}
 
     else {
-	    prevBarStyle = self.navigationController.navigationBar.barStyle;
-
 	    self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 	    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 	}
 
-    prevStatusStyle = [[UIApplication sharedApplication] statusBarStyle];
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
 
+    [[self table] deselectRowAtIndexPath:[self table].indexPathForSelectedRow animated:YES];
+   
     [super viewWillAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear:animated];
+    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
 
-    if (IOS_8_OR_LATER) {
-		self.navigationController.navigationController.navigationBar.tintColor = nil;
-	    self.navigationController.navigationController.navigationBar.barStyle = prevBarStyle;
+	 if (IS_IOS_OR_NEWER(iOS_8_0)) {
+		self.navigationController.navigationController.navigationBar.tintColor = [UIColor blueColor];
+	    self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleDefault;
     }
 
     else {
-		self.navigationController.navigationBar.tintColor = nil;
-		self.navigationController.navigationBar.barStyle = prevBarStyle;
+		self.navigationController.navigationBar.tintColor = [UIColor blueColor];
+		self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
 	}
-
-    [[UIApplication sharedApplication] setStatusBarStyle:prevStatusStyle];
-
-	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
 }
 
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 {
@@ -119,13 +95,22 @@ static void sl_waitUpdate(CFNotificationCenterRef center, void *observer, CFStri
 }
 
 - (void)reset {
+	// -(void)reloadSpecifierAtIndex:(int)index animated:(BOOL)animated;
+
+	// sometimes these custom-slider specifiers don't change,
+	// could this be related to the way their value is read,
+	// and maybe fixed by using PSDiscreteSliders?
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
 	[self setPreferenceValue:@(8.0) specifier:timesSpecifier];
-	[self reloadSpecifier:timesSpecifier];
+	[self reloadSpecifier:timesSpecifier animated:YES];
 
 	PSSpecifier *waitSpecifier = [self specifierForID:@"WaitSlider"];
 	[self setPreferenceValue:@(14.0) specifier:waitSpecifier];
-	[self reloadSpecifier:waitSpecifier];
+	[self reloadSpecifier:waitSpecifier animated:YES];
+
+	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
+	[self setPreferenceValue:@(NO) specifier:moonsSpecifier];
+	[self reloadSpecifier:moonsSpecifier animated:YES];
 }
 
 @end

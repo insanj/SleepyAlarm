@@ -50,6 +50,8 @@ static NSDate *sl_pickedTime;
 - (void)viewWillAppear:(BOOL)animated {
     %orig();
 
+    sl_preferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
+
     // Using Edit Alarms (best way)...
     if (!self.navigationItem.leftBarButtonItem) {
         SLLog(@"Adding SleepyAlarm button to Alarm view...");
@@ -87,10 +89,10 @@ static NSDate *sl_pickedTime;
         return;
     }
 
-    sl_preferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
+    NSNumber *savedWaitAmount = sl_preferences[@"waitAmount"], *savedAmountOfTimesToDisplay = sl_preferences[@"timesAmount"];
 
-    CGFloat amountOfMinutesToWait = [[sl_preferences objectForKey:@"waitAmount"] floatValue] ?: 14.0;
-    NSInteger amountOfTimesToDisplay = [[sl_preferences objectForKey:@"timesAmount"] integerValue] ?: 8;
+    CGFloat amountOfMinutesToWait = savedWaitAmount ? [savedWaitAmount floatValue] : 14.0;
+    NSInteger amountOfTimesToDisplay = savedAmountOfTimesToDisplay ? [savedAmountOfTimesToDisplay integerValue] : 8;
 
     NSDateComponents *startingTimeDateComponents = [[NSDateComponents alloc] init];
     startingTimeDateComponents.minute = amountOfMinutesToWait;
@@ -132,21 +134,44 @@ static NSDate *sl_pickedTime;
 }
 
 %new - (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component {
-    UIColor *indicativeTextColor;
-    switch (row) {
-        default:
-            indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
-            break;
-        case 3:
-            indicativeTextColor = [UIColor colorWithRed:153/255.0  green:204/255.0 blue:102/255.0 alpha:1.0];
-            break;
-        case 4:
-        case 5:
-            indicativeTextColor =  [UIColor colorWithRed:0/255.0 green:204/255.0 blue:51/255.0 alpha:1.0];
-            break;
+
+    NSNumber *savedUseMoons = sl_preferences[@"useMoons"];
+    BOOL useMoonIndicators = savedUseMoons ? [savedUseMoons boolValue] : NO;
+
+    UIColor *indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
+    NSString *sleepyAlarmTimeString = [sl_dateFormatter stringFromDate:sl_times[row]];
+
+    if (useMoonIndicators) {
+         switch (row) {
+            case 3:
+                sleepyAlarmTimeString = [sleepyAlarmTimeString stringByAppendingString:@" 🌓"];
+                break;
+            case 4:
+                sleepyAlarmTimeString = [sleepyAlarmTimeString stringByAppendingString:@" 🌔"];
+                break;
+            case 5:
+                sleepyAlarmTimeString = [sleepyAlarmTimeString stringByAppendingString:@" 🌕"];
+            default:
+                break;
+        }
     }
 
-    return [[NSAttributedString alloc] initWithString:[sl_dateFormatter stringFromDate:sl_times[row]] attributes:@{ NSForegroundColorAttributeName :indicativeTextColor }];
+    else {
+        switch (row) {
+            case 3:
+                indicativeTextColor = [UIColor colorWithRed:153/255.0  green:204/255.0 blue:102/255.0 alpha:1.0];
+                break;
+            case 4:
+                indicativeTextColor =  [UIColor colorWithRed:81/255.0 green:204/255.0 blue:73/255.0 alpha:1.0];
+                break;
+            case 5:
+                indicativeTextColor =  [UIColor colorWithRed:0/255.0 green:204/255.0 blue:51/255.0 alpha:1.0];
+            default:
+                break;
+        }
+    }
+
+    return [[NSAttributedString alloc] initWithString:sleepyAlarmTimeString attributes:@{ NSForegroundColorAttributeName :indicativeTextColor }];
 }
 
 // In case you have Edit Alarms installed...
