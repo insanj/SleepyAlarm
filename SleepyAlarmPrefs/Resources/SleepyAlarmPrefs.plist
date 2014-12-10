@@ -68,13 +68,8 @@
         </dict>
 
 		<dict>
-			<key>cell</key>			     <string>PSGroupCell</string>
-			<key>footerText</key> 	      <string>Recommended companion tweaks:&#10;Edit Alarms (insanj), Eclipse (fr0st)</string>
-		</dict>
-
-		<dict>
 			<key>cell</key>				<string>PSGroupCell</string>
-			<key>footerText</key>	    <string>© 2014 Julian Weiss</string>
+			<key>footerText</key>	    <string>© 2014 Julian (insanj) Weiss</string>
 		</dict>
 
 		<dict>

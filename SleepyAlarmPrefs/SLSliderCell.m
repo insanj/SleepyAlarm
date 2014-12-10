@@ -16,11 +16,11 @@
 	return self;
 }
 
-- (void)layoutSubviews {
-	[super layoutSubviews];
+- (void)refreshCellContentsWithSpecifier:(PSSpecifier *)arg1 {
+	[super refreshCellContentsWithSpecifier:arg1];
 
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
+	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
 	NSNumber *savedValue = savedPreferences[savedValueKey];
 
 	if (savedValue) {
@@ -31,13 +31,9 @@
 
 - (void)discreteSliderTapped:(UIDiscreteSlider *)sender {
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
-	NSNumber *savedValue = @(sender.value);
-
-	NSMutableDictionary *mutableSavedPreferences = [[NSMutableDictionary alloc] initWithDictionary:savedPreferences];
-	[mutableSavedPreferences setObject:savedValue forKey:savedValueKey];
+	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
+	[mutableSavedPreferences setObject:@(sender.value) forKey:savedValueKey];
 	[mutableSavedPreferences writeToFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist" atomically:YES];
-	[mutableSavedPreferences release];
 }
 
 @end

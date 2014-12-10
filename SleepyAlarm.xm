@@ -50,8 +50,6 @@ static NSDate *sl_pickedTime;
 - (void)viewWillAppear:(BOOL)animated {
     %orig();
 
-    sl_preferences = [NSDictionary dictionaryWithContentsOfFile:[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/Preferences/com.insanj.sleepyalarm.plist"]];
-
     // Using Edit Alarms (best way)...
     if (!self.navigationItem.leftBarButtonItem) {
         SLLog(@"Adding SleepyAlarm button to Alarm view...");
@@ -61,6 +59,10 @@ static NSDate *sl_pickedTime;
     // Vanilla app...
     else {
         SLLog(@"Adding long-press gesture to add button in Alarm view...");
+
+        UIBarButtonItem *originalBarButtonItem = self.navigationItem.rightBarButtonItem;
+        self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/add.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStylePlain target:originalBarButtonItem.target action:originalBarButtonItem.action];
+
         UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(sl_sleepyPress:)];
         [[self.navigationItem.rightBarButtonItem valueForKey:@"view"] addGestureRecognizer:longPress];
     }
@@ -88,6 +90,8 @@ static NSDate *sl_pickedTime;
     else {   // Preventative (goto fail;) brackets
         return;
     }
+
+    sl_preferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
 
     NSNumber *savedWaitAmount = sl_preferences[@"waitAmount"], *savedAmountOfTimesToDisplay = sl_preferences[@"timesAmount"];
 
@@ -140,6 +144,8 @@ static NSDate *sl_pickedTime;
 
     UIColor *indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
     NSString *sleepyAlarmTimeString = [sl_dateFormatter stringFromDate:sl_times[row]];
+
+    NSLog(@"----pickerView---%@", sl_preferences);
 
     if (useMoonIndicators) {
          switch (row) {

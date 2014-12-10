@@ -95,17 +95,15 @@
 }
 
 - (void)reset {
-	// -(void)reloadSpecifierAtIndex:(int)index animated:(BOOL)animated;
+	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
+	[mutableSavedPreferences setObject:@(8.0) forKey:@"timesAmount"];
+	[mutableSavedPreferences setObject:@(14.0) forKey:@"waitAmount"];
+	[mutableSavedPreferences writeToFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist" atomically:YES];
 
-	// sometimes these custom-slider specifiers don't change,
-	// could this be related to the way their value is read,
-	// and maybe fixed by using PSDiscreteSliders?
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
-	[self setPreferenceValue:@(8.0) specifier:timesSpecifier];
 	[self reloadSpecifier:timesSpecifier animated:YES];
 
 	PSSpecifier *waitSpecifier = [self specifierForID:@"WaitSlider"];
-	[self setPreferenceValue:@(14.0) specifier:waitSpecifier];
 	[self reloadSpecifier:waitSpecifier animated:YES];
 
 	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
