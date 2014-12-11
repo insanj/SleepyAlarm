@@ -6,9 +6,23 @@
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
 #define IOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
+static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SLMoons" object:nil];
+}
+
 @implementation SLListController
 
+- (NSArray *)specifiers {
+	if (!_specifiers) {
+		_specifiers = [[self loadSpecifiersFromPlistName:@"SleepyAlarmPrefs" target:self] retain];
+	}
+
+	return _specifiers;
+}
+
 - (void)loadView {
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_useMoonsUpdate, CFSTR("com.insanj.sleepyalarm/moons"), NULL, 0);
+
 	[super loadView];
 
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
@@ -21,44 +35,38 @@
 	[self table].separatorStyle = UITableViewCellSeparatorStyleNone;
 }
 
-- (NSArray *)specifiers {
-	if (!_specifiers) {
-		_specifiers = [[self loadSpecifiersFromPlistName:@"SleepyAlarmPrefs" target:self] retain];
-	}
-
-	return _specifiers;
-}
-
 - (void)viewWillAppear:(BOOL)animated {
-    if (IS_IOS_OR_NEWER(iOS_8_0)) {
-	    self.navigationController.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
+	if (IS_IOS_OR_NEWER(iOS_8_0)) {
+		self.navigationController.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 		self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 	}
 
-    else {
-	    self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
-	    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
+	else {
+		self.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
+		self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
 	}
 
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
-    [[self table] deselectRowAtIndexPath:[self table].indexPathForSelectedRow animated:YES];
-   
-    [super viewWillAppear:animated];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
+   	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadMoonsSafePreferences) name:@"SLMoons" object:nil];
+
+	[super viewWillAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear:animated];
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLMoons" object:nil];
 
 	 if (IS_IOS_OR_NEWER(iOS_8_0)) {
 		self.navigationController.navigationController.navigationBar.tintColor = [UIColor blueColor];
-	    self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleDefault;
-    }
+		self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleDefault;
+	}
 
-    else {
+	else {
 		self.navigationController.navigationBar.tintColor = [UIColor blueColor];
 		self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
 	}
@@ -95,10 +103,11 @@
 }
 
 - (void)reset {
-	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
+	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
 	[mutableSavedPreferences setObject:@(8.0) forKey:@"timesAmount"];
 	[mutableSavedPreferences setObject:@(14.0) forKey:@"waitAmount"];
-	[mutableSavedPreferences writeToFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist" atomically:YES];
+	[mutableSavedPreferences setObject:@(NO) forKey:@"useMoons"];
+	[mutableSavedPreferences writeToFile:SL_PREFS_PATH atomically:YES];
 
 	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
 	[self reloadSpecifier:timesSpecifier animated:YES];
@@ -109,6 +118,17 @@
 	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
 	[self setPreferenceValue:@(NO) specifier:moonsSpecifier];
 	[self reloadSpecifier:moonsSpecifier animated:YES];
+}
+
+- (void)reloadMoonsSafePreferences {
+	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
+	NSNumber *savedMoonsValue = [self readPreferenceValue:moonsSpecifier];
+
+	NSLog(@"---reloadMoonsSafePreferences---%@", savedMoonsValue); 
+
+	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
+	[mutableSavedPreferences setObject:savedMoonsValue forKey:@"useMoons"];
+	[mutableSavedPreferences writeToFile:SL_PREFS_PATH atomically:YES];
 }
 
 @end

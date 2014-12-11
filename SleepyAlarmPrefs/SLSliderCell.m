@@ -1,5 +1,6 @@
 #import "SLSliderCell.h"
 #import "UIDiscreteSlider.h"
+#import "SLListController.h"
 
 @implementation SLSliderCell
 
@@ -20,7 +21,7 @@
 	[super refreshCellContentsWithSpecifier:arg1];
 
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
+	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
 	NSNumber *savedValue = savedPreferences[savedValueKey];
 
 	if (savedValue) {
@@ -31,9 +32,9 @@
 
 - (void)discreteSliderTapped:(UIDiscreteSlider *)sender {
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist"];
+	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
 	[mutableSavedPreferences setObject:@(sender.value) forKey:savedValueKey];
-	[mutableSavedPreferences writeToFile:@"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.plist" atomically:YES];
+	[mutableSavedPreferences writeToFile:SL_PREFS_PATH atomically:YES];
 }
 
 @end

@@ -8,6 +8,10 @@
 #import <notify.h>
 #import "substrate.h"
 
+#ifndef SL_PREFS_PATH
+#define SL_PREFS_PATH @"/var/mobile/Library/Preferences/com.insanj.sleepyalarm.safe.plist"
+#endif
+
 @interface SLListController : PSListController
 
 @end

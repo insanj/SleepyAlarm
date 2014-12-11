@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>items</key>
+	<key>items</key>
 	<array>
 
 		<dict>
@@ -21,10 +21,10 @@
 			<key>footerText</key> 	        <string>Fewer to the left, more to the right.</string>
 		</dict>
 
-        <dict>
-	        <key>cell</key>                 <string>PSSliderCell</string>
-            <key>cellClass</key>            <string>SLSliderCell</string>
-            <key>defaults</key>             <string>com.insanj.sleepyalarm</string>
+		<dict>
+			<key>cell</key>                 <string>PSSliderCell</string>
+			<key>cellClass</key>            <string>SLSliderCell</string>
+			<key>defaults</key>             <string>com.insanj.sleepyalarm</string>
 		   <key>key</key> 			    	<string>timesAmount</string>
 			<key>id</key> 			     	<string>TimesSlider</string>
 			<key>leftImage</key> 		    <string>crescent.png</string>
@@ -32,7 +32,7 @@
 			<key>min</key> 			    	<real>5</real>
 			<key>max</key> 			    	<real>11</real>
 			<key>default</key> 		    	<real>8</real>
-        </dict>
+		</dict>
 
 		<dict>
 			<key>cell</key>			     <string>PSGroupCell</string>
@@ -42,7 +42,7 @@
 
 		<dict>
 			<key>cell</key>				<string>PSSliderCell</string>
-        <key>cellClass</key>            <string>SLSliderCell</string>
+		<key>cellClass</key>            <string>SLSliderCell</string>
 			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
 			<key>key</key> 				<string>waitAmount</string>
 			<key>id</key> 				<string>WaitSlider</string>
@@ -54,18 +54,19 @@
 		</dict>
 
 		<dict>
-            <key>cell</key>			     <string>PSGroupCell</string>
+			<key>cell</key>			     <string>PSGroupCell</string>
 			<key>footerText</key> 	     <string>Normally, the ideal alarms are highlighted in green. If you have an alarm-darkening tweak enabled, using Moon emoji might work better.</string>
-        </dict>
+		</dict>
 
-        <dict>
-            <key>cell</key>				<string>PSSwitchCell</string>
-            <key>defaults</key>			<string>com.insanj.sleepyalarm</string>
-            <key>key</key> 				<string>useMoons</string>
-            <key>id</key> 				<string>MoonSwitch</string>
-            <key>label</key> 			<string>Use Moon Indicators</string>
-            <key>default</key> 			<false/>
-        </dict>
+		<dict>
+			<key>cell</key>				<string>PSSwitchCell</string>
+			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
+			<key>key</key> 				<string>useMoons</string>
+			<key>id</key> 				<string>MoonSwitch</string>
+			<key>label</key> 			<string>Use Moon Indicators</string>
+			<key>default</key> 			<false/>
+			<key>PostNotification</key> <string>com.insanj.sleepyalarm/moons</string>
+		</dict>
 
 		<dict>
 			<key>cell</key>				<string>PSGroupCell</string>
