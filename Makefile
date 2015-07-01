@@ -7,6 +7,7 @@ include theos/makefiles/common.mk
 TWEAK_NAME = SleepyAlarm
 SleepyAlarm_FILES = SleepyAlarm.xm RMPickerViewController/RMPickerViewController.m
 SleepyAlarm_FRAMEWORKS = UIKit CoreGraphics
+SleepyAlarm_LIBRARIES = cephei
 SleepyAlarm_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk

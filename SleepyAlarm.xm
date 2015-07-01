@@ -1,6 +1,8 @@
 #import "SleepyAlarm.h"
 #import "RMPickerViewController/RMPickerViewController.h"
 
+static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseAlarmsKey = @"useMoons";
+
 /*
   ______  ___________  ______     _______   
  /" _  "\("     _   ")/    " \   /"      \  
@@ -11,18 +13,19 @@
  \_______)    \__|   \"_____/   |__|  \___) 
 */
 
-static NSNumber *sl_waitAmount, *sl_timesAmount, *sl_useMoons;
-
-static NSDateFormatter *sl_dateFormatter;
-
+static CGFloat sl_waitAmount;
+static NSInteger sl_timesAmount;
+static BOOL sl_useMoons;
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
 
 %ctor {
-	sl_dateFormatter = [[NSDateFormatter alloc] init];
-	[sl_dateFormatter setLocale:[NSLocale currentLocale]];
-	[sl_dateFormatter setDateStyle:NSDateFormatterNoStyle];
-	[sl_dateFormatter setTimeStyle:NSDateFormatterShortStyle];
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	[preferences registerDefaults:@{
+		kSleepyAlarmTimeAmountKey : @8,
+		kSleepyAlarmWaitAmountKey : @14,
+		kSleepyAlarmUseAlarmsKey : @NO,
+	}];
 }
 
 /*
@@ -60,7 +63,6 @@ static NSDate *sl_pickedTime;
 	// Vanilla app...
 	else {
 		SLLog(@"Adding long-press gesture to add button in Alarm view...");
-
 		UIBarButtonItem *originalBarButtonItem = self.navigationItem.rightBarButtonItem;
 		self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[[UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/SleepyAlarmPrefs.bundle/add.png"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] style:UIBarButtonItemStylePlain target:originalBarButtonItem.target action:originalBarButtonItem.action];
 
@@ -92,29 +94,27 @@ static NSDate *sl_pickedTime;
 		return;
 	}
 
-	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	sl_waitAmount = [preferences floatForKey:kSleepyAlarmWaitAmountKey default:14.0];
+	sl_timesAmount = [preferences integerForKey:kSleepyAlarmTimeAmountKey default:8];
+	sl_useMoons = [preferences boolForKey:kSleepyAlarmUseAlarmsKey default:NO];
 
-	sl_waitAmount = savedPreferences[@"waitAmount"] ?: @(14.0);
-	sl_timesAmount = savedPreferences[@"timesAmount"] ?: @(8);
-	sl_useMoons = savedPreferences[@"useMoons"] ?: @(NO);
-
-	SLLog(@"%@: %@, %@, %@", savedPreferences, sl_waitAmount, sl_timesAmount, sl_useMoons);
+	// SLLog(@"%@: %@, %@, %@", preferences, @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
 
 	NSDateComponents *startingTimeDateComponents = [[NSDateComponents alloc] init];
-	startingTimeDateComponents.minute = [sl_waitAmount floatValue];
+	startingTimeDateComponents.minute = sl_waitAmount;
 
 	NSDate *iteratingWakeUpTime = [[NSCalendar currentCalendar] dateByAddingComponents:startingTimeDateComponents toDate:[NSDate date] options:0];
 	startingTimeDateComponents.minute = 90;
 
-	sl_times = [[NSMutableArray alloc] initWithCapacity:[sl_timesAmount integerValue]];
-
-	for (int i = 2; i < [sl_timesAmount integerValue]; i++) {
+	sl_times = [[NSMutableArray alloc] initWithCapacity:sl_timesAmount];
+	for (int i = 2; i < sl_timesAmount; i++) {
 		// iteratingWakeUpTime.minute = 60 * (fmod(i, 2) + 1);
 		iteratingWakeUpTime = [[NSCalendar currentCalendar] dateByAddingComponents:startingTimeDateComponents toDate:iteratingWakeUpTime options:0];
 		[sl_times addObject:[iteratingWakeUpTime copy]];
 	}
 
-	NSString *descriptiveHeaderString = [NSString stringWithFormat:@"SleepyAlarm\n\nPick your preferred wake up time, assuming it takes about %@ minutes for you to fall asleep", [NSNumberFormatter localizedStringFromNumber:@([sl_waitAmount floatValue]) numberStyle:NSNumberFormatterSpellOutStyle]];
+	NSString *descriptiveHeaderString = [NSString stringWithFormat:@"SleepyAlarm\n\nPick your preferred wake up time, assuming it takes about %@ minutes for you to fall asleep", [NSNumberFormatter localizedStringFromNumber:@(sl_waitAmount) numberStyle:NSNumberFormatterSpellOutStyle]];
 
 	RMPickerViewController *sleepyAlarmPickerViewController = [RMPickerViewController pickerController];
 	sleepyAlarmPickerViewController.delegate = self;
@@ -141,11 +141,10 @@ static NSDate *sl_pickedTime;
 
 %new - (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component {
 	UIColor *indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
-	NSString *sleepyAlarmTimeString = [sl_dateFormatter stringFromDate:sl_times[row]];
+	NSString *sleepyAlarmTimeString = [NSDateFormatter localizedStringFromDate:sl_times[row] dateStyle:NSDateFormatterNoStyle timeStyle:NSDateFormatterShortStyle];
+	SLLog(@"%@", @(sl_useMoons));
 
-	SLLog(@"%@", sl_useMoons);
-
-	if ([sl_useMoons boolValue]) {
+	if (sl_useMoons) {
 		 switch (row) {
 			case 3:
 				sleepyAlarmTimeString = [sleepyAlarmTimeString stringByAppendingString:@" 🌓"];
@@ -199,7 +198,6 @@ static NSDate *sl_pickedTime;
  /   /  \\  \ |:       :)|:       :)     /   /  \\  \( \_|:  \  /   /  \\  \ |:  __   \ |.  \    /:  |
 (___/    \___)(________/ (________/     (___/    \___)\_______)(___/    \___)|__|  \___)|___|\__/|___|
 */
-
 %hook EditAlarmView
 
 - (void)layoutSubviews {

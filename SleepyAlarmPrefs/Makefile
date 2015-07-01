@@ -6,8 +6,9 @@ include theos/makefiles/common.mk
 BUNDLE_NAME = SleepyAlarmPrefs 
 SleepyAlarmPrefs_FILES = SLListController.xm $(wildcard *.m)
 SleepyAlarmPrefs_INSTALL_PATH = /Library/PreferenceBundles
-SleepyAlarmPrefs_FRAMEWORKS = UIKit Twitter CoreGraphics MessageUI QuartzCore
+SleepyAlarmPrefs_FRAMEWORKS = UIKit CoreGraphics MessageUI QuartzCore
 SleepyAlarmPrefs_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
+SleepyAlarmPrefs_LIBRARIES = cephei
 UIDiscreteSlider.m_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/bundle.mk
