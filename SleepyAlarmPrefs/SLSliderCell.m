@@ -1,6 +1,9 @@
 #import "SLSliderCell.h"
 #import "UIDiscreteSlider.h"
-#import "SLListController.h"
+#import <Cephei/HBPreferences.h>
+#import <UIKit/UIKit.h>
+#import <UIKit/UIImage+Private.h>
+#import <QuartzCore/QuartzCore.h>
 
 @implementation SLSliderCell
 
@@ -21,20 +24,17 @@
 	[super refreshCellContentsWithSpecifier:arg1];
 
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSDictionary *savedPreferences = [NSDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
-	NSNumber *savedValue = savedPreferences[savedValueKey];
 
-	if (savedValue) {
-		UIDiscreteSlider *discreteSlider = (UIDiscreteSlider *)self.control;
-		discreteSlider.value = [savedValue floatValue];
-	}
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	UIDiscreteSlider *discreteSlider = (UIDiscreteSlider *)self.control;
+	discreteSlider.value = [preferences floatForKey:savedValueKey];
 }
 
 - (void)discreteSliderTapped:(UIDiscreteSlider *)sender {
 	NSString *savedValueKey = [[self specifier] propertyForKey:@"key"];
-	NSMutableDictionary *mutableSavedPreferences = [NSMutableDictionary dictionaryWithContentsOfFile:SL_PREFS_PATH];
-	[mutableSavedPreferences setObject:@(sender.value) forKey:savedValueKey];
-	[mutableSavedPreferences writeToFile:SL_PREFS_PATH atomically:YES];
+
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	[preferences setFloat:sender.value forKey:savedValueKey];
 }
 
 @end

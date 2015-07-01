@@ -1,4 +1,7 @@
 #import "SLBannerButtonCell.h"
+#import <UIKit/UIKit.h>
+#import <UIKit/UIImage+Private.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface SLBannerButtonCell ()
 

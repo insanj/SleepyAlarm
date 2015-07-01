@@ -26,7 +26,7 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 	[super loadView];
 
 	// This code snippet also found in SleepyAlarm's %ctor
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
 	[preferences registerDefaults:@{
 		kSleepyAlarmTimeAmountKey : @8,
 		kSleepyAlarmWaitAmountKey : @14.0,
@@ -131,7 +131,7 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 }
 
 - (void)reset {
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
 	[preferences setInteger:8 forKey:kSleepyAlarmTimeAmountKey];
 	[preferences setFloat:14.0 forKey:kSleepyAlarmWaitAmountKey];
 	[preferences setBool:NO forKey:kSleepyAlarmUseAlarmsKey];
@@ -151,7 +151,7 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 - (void)reloadMoonsSafePreferences {
 	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
 	NSNumber *savedMoonsValue = [self readPreferenceValue:moonsSpecifier];
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
 	[preferences setBool:[savedMoonsValue boolValue] forKey:kSleepyAlarmUseAlarmsKey];
 	[preferences synchronize];
 }
