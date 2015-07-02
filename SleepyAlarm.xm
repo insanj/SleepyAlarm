@@ -3,30 +3,10 @@
 
 static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseMoonsKey = @"useMoons";
 
-/*
-  ______  ___________  ______     _______   
- /" _  "\("     _   ")/    " \   /"      \  
-(: ( \___))__/  \\__/// ____  \ |:        | 
- \/ \        \\_ /  /  /    ) :)|_____/   ) 
- //  \ _     |.  | (: (____/ //  //      /  
-(:   _) \    \:  |  \        /  |:  __   \  
- \_______)    \__|   \"_____/   |__|  \___) 
-*/
-
 static NSInteger sl_timesAmount, sl_waitAmount;
 static BOOL sl_useMoons;
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
-
-%ctor {
-	HBPreferences *preferences = [[HBPreferences alloc] initWithIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences registerInteger:&sl_waitAmount default:14 forKey:kSleepyAlarmWaitAmountKey];
-	[preferences registerInteger:&sl_timesAmount default:8 forKey:kSleepyAlarmTimeAmountKey];
-	[preferences registerBool:&sl_useMoons default:NO forKey:kSleepyAlarmUseMoonsKey];
-	[preferences synchronize];
-
-	SLLog(@"%@, %@, %@", @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
-}
 
 /*
   ________  __    __     ______    __   __  ___       ________  __    __    _______   _______  ___________  
@@ -93,6 +73,11 @@ static NSDate *sl_pickedTime;
 	else {   // Preventative (goto fail;) brackets
 		return;
 	}
+
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	sl_waitAmount = [preferences integerForKey:kSleepyAlarmWaitAmountKey default:14];
+	sl_timesAmount = [preferences integerForKey:kSleepyAlarmTimeAmountKey default:8];
+	sl_useMoons = [preferences boolForKey:kSleepyAlarmUseMoonsKey default:NO];
 
 	SLLog(@"%@, %@, %@", @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
 

@@ -5,10 +5,6 @@
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
 #define IOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
-static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SLMoons" object:nil];
-}
-
 @implementation SLListController
 
 + (NSString *)hb_specifierPlist {
@@ -34,8 +30,6 @@ static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CF
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-	CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, &sl_useMoonsUpdate, CFSTR("com.insanj.sleepyalarm/moons"), NULL, 0);
-
 	if (IS_IOS_OR_NEWER(iOS_8_0)) {
 		self.navigationController.navigationController.navigationBar.tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 		self.navigationController.navigationController.navigationBar.barStyle = UIBarStyleBlack;
@@ -48,16 +42,11 @@ static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CF
 
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
-   	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadMoonsSafePreferences) name:@"SLMoons" object:nil];
-
 	[super viewWillAppear:animated];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
 	[super viewWillDisappear:animated];
-
-	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, CFSTR("com.insanj.sleepyalarm/moons"), NULL);
-	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLMoons" object:nil];
 
 	 if (IS_IOS_OR_NEWER(iOS_8_0)) {
 		self.navigationController.navigationController.navigationBar.tintColor = [UIColor blueColor];
@@ -95,14 +84,6 @@ static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CF
 	((UILabel *)cell.textLabel).textColor = [UIColor whiteColor];
 
 	return cell;
-}
-
-- (void)reloadMoonsSafePreferences {
-	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
-	NSNumber *savedMoonsValue = [self readPreferenceValue:moonsSpecifier];
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences setBool:[savedMoonsValue boolValue] forKey:@"useMoons"];
-	[preferences synchronize];
 }
 
 @end
