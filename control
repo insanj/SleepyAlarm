@@ -1,7 +1,7 @@
 Package: com.insanj.sleepyalarm
 Name: SleepyAlarm
 Pre-Depends: firmware (>= 7.0)
-Depends: mobilesubstrate
+Depends: mobilesubstrate, ws.hbang.common
 Version: 2.2
 Architecture: iphoneos-arm
 Description: Sleep better with your Alarms.
