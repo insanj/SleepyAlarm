@@ -1,7 +1,7 @@
 #import "SleepyAlarm.h"
 #import "RMPickerViewController/RMPickerViewController.h"
 
-static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseAlarmsKey = @"useMoons";
+static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseMoonsKey = @"useMoons";
 
 /*
   ______  ___________  ______     _______   
@@ -13,19 +13,16 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
  \_______)    \__|   \"_____/   |__|  \___) 
 */
 
-static CGFloat sl_waitAmount;
-static NSInteger sl_timesAmount;
+static NSInteger sl_timesAmount, sl_waitAmount;
 static BOOL sl_useMoons;
 static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
 
 %ctor {
 	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences registerDefaults:@{
-		kSleepyAlarmTimeAmountKey : @8,
-		kSleepyAlarmWaitAmountKey : @14,
-		kSleepyAlarmUseAlarmsKey : @NO,
-	}];
+	[preferences registerInteger:&sl_waitAmount default:14 forKey:kSleepyAlarmWaitAmountKey];
+	[preferences registerInteger:&sl_timesAmount default:8 forKey:kSleepyAlarmTimeAmountKey];
+	[preferences registerBool:&sl_useMoons default:NO forKey:kSleepyAlarmUseMoonsKey];
 }
 
 /*
@@ -94,12 +91,7 @@ static NSDate *sl_pickedTime;
 		return;
 	}
 
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	sl_waitAmount = [preferences floatForKey:kSleepyAlarmWaitAmountKey default:14.0];
-	sl_timesAmount = [preferences integerForKey:kSleepyAlarmTimeAmountKey default:8];
-	sl_useMoons = [preferences boolForKey:kSleepyAlarmUseAlarmsKey default:NO];
-
-	// SLLog(@"%@: %@, %@, %@", preferences, @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
+	SLLog(@"%@, %@, %@", @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
 
 	NSDateComponents *startingTimeDateComponents = [[NSDateComponents alloc] init];
 	startingTimeDateComponents.minute = sl_waitAmount;

@@ -5,7 +5,7 @@ ARCHS = armv7 armv7s arm64
 include theos/makefiles/common.mk
 
 BUNDLE_NAME = SleepyAlarmPrefs 
-SleepyAlarmPrefs_FILES = SLListController.xm $(wildcard *.m)
+SleepyAlarmPrefs_FILES = SLListController.xm SLBannerButtonCell.m
 SleepyAlarmPrefs_INSTALL_PATH = /Library/PreferenceBundles
 SleepyAlarmPrefs_FRAMEWORKS = UIKit CoreGraphics MessageUI QuartzCore
 SleepyAlarmPrefs_PRIVATE_FRAMEWORKS = Preferences BulletinBoard

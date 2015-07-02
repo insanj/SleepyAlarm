@@ -9,8 +9,6 @@ static void sl_useMoonsUpdate(CFNotificationCenterRef center, void *observer, CF
 	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"SLMoons" object:nil];
 }
 
-static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseAlarmsKey = @"useMoons";
-
 @implementation SLListController
 
 + (NSString *)hb_specifierPlist {
@@ -23,14 +21,6 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 
 - (void)loadView {
 	[super loadView];
-
-	// This code snippet also found in SleepyAlarm's %ctor
-	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences registerDefaults:@{
-		kSleepyAlarmTimeAmountKey : @8,
-		kSleepyAlarmWaitAmountKey : @14.0,
-		kSleepyAlarmUseAlarmsKey : @NO,
-	}];
 
 	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
 	
@@ -58,7 +48,6 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
 
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reset) name:@"SLReset" object:nil];
    	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadMoonsSafePreferences) name:@"SLMoons" object:nil];
 
 	[super viewWillAppear:animated];
@@ -68,9 +57,6 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 	[super viewWillDisappear:animated];
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, CFSTR("com.insanj.sleepyalarm/moons"), NULL);
-
-	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLReset" object:nil];
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"SLMoons" object:nil];
 
 	 if (IS_IOS_OR_NEWER(iOS_8_0)) {
@@ -82,6 +68,8 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 		self.navigationController.navigationBar.tintColor = [UIColor blueColor];
 		self.navigationController.navigationBar.barStyle = UIBarStyleDefault;
 	}
+
+	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
 }
 
 - (void)shareTapped:(UIBarButtonItem *)sender {
@@ -104,14 +92,16 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 		((UILabel *)cell.titleLabel).textColor = [UIColor whiteColor];
 	}
 
+	((UILabel *)cell.textLabel).textColor = [UIColor whiteColor];
+
 	return cell;
 }
 
 - (void)reloadMoonsSafePreferences {
 	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
 	NSNumber *savedMoonsValue = [self readPreferenceValue:moonsSpecifier];
-	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences setBool:[savedMoonsValue boolValue] forKey:kSleepyAlarmUseAlarmsKey];
+	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	[preferences setBool:[savedMoonsValue boolValue] forKey:@"useMoons"];
 	[preferences synchronize];
 }
 
