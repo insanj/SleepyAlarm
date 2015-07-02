@@ -19,10 +19,13 @@ static NSMutableArray *sl_times;
 static NSDate *sl_pickedTime;
 
 %ctor {
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	HBPreferences *preferences = [[HBPreferences alloc] initWithIdentifier:@"com.insanj.sleepyalarm"];
 	[preferences registerInteger:&sl_waitAmount default:14 forKey:kSleepyAlarmWaitAmountKey];
 	[preferences registerInteger:&sl_timesAmount default:8 forKey:kSleepyAlarmTimeAmountKey];
 	[preferences registerBool:&sl_useMoons default:NO forKey:kSleepyAlarmUseMoonsKey];
+	[preferences synchronize];
+
+	SLLog(@"%@, %@, %@", @(sl_waitAmount), @(sl_timesAmount), @(sl_useMoons));
 }
 
 /*
