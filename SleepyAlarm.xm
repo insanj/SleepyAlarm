@@ -88,13 +88,12 @@ static NSDate *sl_pickedTime;
 	startingTimeDateComponents.minute = 90;
 
 	sl_times = [[NSMutableArray alloc] initWithCapacity:sl_timesAmount];
-	for (int i = 2; i < sl_timesAmount; i++) {
-		// iteratingWakeUpTime.minute = 60 * (fmod(i, 2) + 1);
+	for (int i = 0; i < sl_timesAmount; i++) { // no idea why i = 2 before...
 		iteratingWakeUpTime = [[NSCalendar currentCalendar] dateByAddingComponents:startingTimeDateComponents toDate:iteratingWakeUpTime options:0];
 		[sl_times addObject:[iteratingWakeUpTime copy]];
 	}
 
-	NSString *descriptiveHeaderString = [NSString stringWithFormat:@"SleepyAlarm\n\nPick your preferred wake up time, assuming it takes about %@ minutes for you to fall asleep", [NSNumberFormatter localizedStringFromNumber:@(sl_waitAmount) numberStyle:NSNumberFormatterSpellOutStyle]];
+	NSString *descriptiveHeaderString = [NSString stringWithFormat:@"SleepyAlarm\n\nPick your preferred wake up time, assuming it takes about %@ minute%@ for you to fall asleep", [NSNumberFormatter localizedStringFromNumber:@(sl_waitAmount) numberStyle:NSNumberFormatterSpellOutStyle], sl_waitAmount == 1 ? @"" : @"s"];
 
 	RMPickerViewController *sleepyAlarmPickerViewController = [RMPickerViewController pickerController];
 	sleepyAlarmPickerViewController.delegate = self;
