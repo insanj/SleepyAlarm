@@ -6,64 +6,61 @@
 	<array>
 
 		<dict>
-			<key>cell</key>				    <string>PSGroupCell</string>
+			<key>cell</key> 				<string>PSGroupCell</string>
 		</dict>
 
 		<dict>
-			<key>cell</key> 		       	<string>PSStaticTextCell</string>
-			<key>cellClass</key> 	      	<string>SLBannerButtonCell</string>
-			<key>height</key> 		     	<integer>205</integer>
+			<key>cell</key> 				<string>PSStaticTextCell</string>
+			<key>cellClass</key> 			<string>SLBannerButtonCell</string>
+			<key>height</key> 				<integer>205</integer>
 		</dict>
 
 		<dict>
-			<key>cell</key>		            <string>PSGroupCell</string>
-			<key>label</key>		        <string>Times</string>
-			<key>footerText</key> 	        <string>How many times should you be able to select from?</string>
+			<key>cell</key> 				<string>PSGroupCell</string>
+			<key>label</key> 				<string>Times</string>
+			<key>footerText</key> 			<string>Amount of times to choose from in Alarms</string>
 		</dict>
 
 		<dict>
 			<key>cellClass</key> 			<string>HBStepperTableCell</string>
 			<key>default</key> 				<real>8</real>
 			<key>defaults</key> 			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 					<string>timeAmount</string>
-			<key>id</key> 					<string>TimeSlider</string>
+			<key>key</key> 					<string>timesCount</string>
 			<key>label</key> 				<string>%i Times</string>
 			<key>max</key> 					<real>20</real>
 			<key>min</key> 					<real>5</real>
 			<key>singularLabel</key> 		<string>1 Time</string>
-			<key>PostNotification</key>  	<string>com.insanj.sleepyalarm/ReloadPrefs</string>
+			<key>PostNotification</key> 	<string>com.insanj.sleepyalarm/ReloadPrefs</string>
 		</dict>
 
 		<dict>
-			<key>cell</key>			     <string>PSGroupCell</string>
-			<key>label</key>		     <string>Wait</string>
-			<key>footerText</key> 	      <string>How short or long does it take you to fall asleep?</string>
+			<key>cell</key> 			<string>PSGroupCell</string>
+			<key>label</key> 			<string>Wait</string>
+			<key>footerText</key> 		<string>Delay before calculating best sleep times</string>
 		</dict>
 
 		<dict>
 			<key>cellClass</key> 			<string>HBStepperTableCell</string>
 			<key>default</key> 				<real>14</real>
 			<key>defaults</key> 			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 					<string>waitAmount</string>
-			<key>key</key> 					<string>WaitSlider</string>
+			<key>key</key> 					<string>waitTime</string>
 			<key>label</key> 				<string>%i Minute Wait</string>
 			<key>max</key> 					<real>60</real>
 			<key>min</key> 					<real>1</real>
 			<key>singularLabel</key> 		<string>1 Minute Wait</string>
-			<key>PostNotification</key>  	<string>com.insanj.sleepyalarm/ReloadPrefs</string>
+			<key>PostNotification</key> 	<string>com.insanj.sleepyalarm/ReloadPrefs</string>
 		</dict>
 		
 
 		<dict>
-			<key>cell</key>			     <string>PSGroupCell</string>
-			<key>footerText</key> 	     <string>Normally, the ideal alarms are highlighted in green. If you have an alarm-darkening tweak enabled, using Moon emoji might work better.</string>
+			<key>cell</key> 			<string>PSGroupCell</string>
+			<key>footerText</key> 		<string>With this disabled, ideal alarms are highlighted in green. With this enabled, Moon emoji will be used instead.</string>
 		</dict>
 
 		<dict>
-			<key>cell</key>				<string>PSSwitchCell</string>
-			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
+			<key>cell</key> 			<string>PSSwitchCell</string>
+			<key>defaults</key> 		<string>com.insanj.sleepyalarm</string>
 			<key>key</key> 				<string>useMoons</string>
-			<key>id</key> 				<string>MoonSwitch</string>
 			<key>label</key> 			<string>Use Moon Indicators</string>
 			<key>default</key> 			<false/>
 			<key>PostNotification</key> <string>com.insanj.sleepyalarm/ReloadPrefs</string>
@@ -71,16 +68,16 @@
 
 		<dict>
 			<key>cell</key>				<string>PSGroupCell</string>
-			<key>footerText</key>	    <string>© 2014-2015 Julian (insanj) Weiss</string>
+			<key>footerText</key>		<string>© 2014-2015. Thank you for purchasing v2.2!</string>
 		</dict>
 
-	  	<dict>
-	  		<key>big</key> 				<true/>
-	  		<key>cellClass</key> 		<string>HBTwitterCell</string>
-	  		<key>height</key> 			<integer>56</integer>
-	  		<key>label</key> 			<string>Julian Weiss</string>
-	  		<key>user</key> 			<string>insanj</string>
-	  	</dict>
+		<dict>
+			<key>big</key> 				<true/>
+			<key>cellClass</key> 		<string>HBTwitterCell</string>
+			<key>height</key> 			<integer>56</integer>
+			<key>label</key> 			<string>Julian Weiss</string>
+			<key>user</key> 			<string>insanj</string>
+		</dict>
 
 	</array>
 	<key>title</key>	<string>SleepyAlarm</string>

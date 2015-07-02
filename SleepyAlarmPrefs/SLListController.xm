@@ -2,7 +2,6 @@
 #import "SLBannerButtonCell.h"
 #import "version.h"
 
-#define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
 #define IOS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 
 @implementation SLListController
@@ -15,11 +14,17 @@
 	return [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 }
 
++ (NSString *)hb_shareText {
+	return @"Easily calculate the healthiest & most comfortable time to wake up, right from the Clock app. SleepyAlarm by @insanj.";
+}
+
++ (NSURL *)hb_shareURL {
+	return [NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"];
+}
+
 - (void)loadView {
 	[super loadView];
 
-	self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(shareTapped:)];
-	
 	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 	[UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
 	[UILabel appearanceWhenContainedIn:self.class, nil].textColor = [UIColor whiteColor];
@@ -41,7 +46,6 @@
 	}
 
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-
 	[super viewWillAppear:animated];
 }
 
@@ -59,20 +63,6 @@
 	}
 
 	[[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-}
-
-- (void)shareTapped:(UIBarButtonItem *)sender {
-	NSString *text = @"A better night's slumber, without a blink of trouble. SleepyAlarm by @insanj.";
-	NSURL *url = [NSURL URLWithString:@"http://insanj.github.io/SleepyAlarm/"];
-
-	if (%c(UIActivityViewController)) {
-		UIActivityViewController *viewController = [[[%c(UIActivityViewController) alloc] initWithActivityItems:[NSArray arrayWithObjects:text, url, nil] applicationActivities:nil] autorelease];
-		[self.navigationController presentViewController:viewController animated:YES completion:NULL];
-	}
-
-	else {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[NSString stringWithFormat:@"https://twitter.com/intent/tweet?text=%@%%20%@", URL_ENCODE(text), URL_ENCODE(url.absoluteString)]]];
-	}
 }
 
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 {

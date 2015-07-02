@@ -1,7 +1,7 @@
 #import "SleepyAlarm.h"
 #import "RMPickerViewController/RMPickerViewController.h"
 
-static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAmountKey = @"waitAmount", *kSleepyAlarmUseMoonsKey = @"useMoons";
+static NSString *kSleepyAlarmTimeAmountKey = @"timesCount", *kSleepyAlarmWaitAmountKey = @"waitTime", *kSleepyAlarmUseMoonsKey = @"useMoons";
 
 static NSInteger sl_timesAmount, sl_waitAmount;
 static BOOL sl_useMoons;
@@ -74,7 +74,7 @@ static NSDate *sl_pickedTime;
 		return;
 	}
 
-	HBPreferences *preferences = [HBPreferences preferencesForIdentifier:@"com.insanj.sleepyalarm"];
+	HBPreferences *preferences = [[HBPreferences alloc] initWithIdentifier:@"com.insanj.sleepyalarm"];
 	sl_waitAmount = [preferences integerForKey:kSleepyAlarmWaitAmountKey default:14];
 	sl_timesAmount = [preferences integerForKey:kSleepyAlarmTimeAmountKey default:8];
 	sl_useMoons = [preferences boolForKey:kSleepyAlarmUseMoonsKey default:NO];
@@ -122,7 +122,6 @@ static NSDate *sl_pickedTime;
 %new - (NSAttributedString *)pickerView:(UIPickerView *)pickerView attributedTitleForRow:(NSInteger)row forComponent:(NSInteger)component {
 	UIColor *indicativeTextColor = [UIColor colorWithWhite:102/255.0 alpha:1.0];
 	NSString *sleepyAlarmTimeString = [NSDateFormatter localizedStringFromDate:sl_times[row] dateStyle:NSDateFormatterNoStyle timeStyle:NSDateFormatterShortStyle];
-	SLLog(@"%@", @(sl_useMoons));
 
 	if (sl_useMoons) {
 		 switch (row) {
