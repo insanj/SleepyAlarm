@@ -18,40 +18,39 @@
 		<dict>
 			<key>cell</key>		            <string>PSGroupCell</string>
 			<key>label</key>		        <string>Times</string>
-			<key>footerText</key> 	        <string>Fewer to the left, more to the right.</string>
+			<key>footerText</key> 	        <string>How many times should you be able to select from?</string>
 		</dict>
 
 		<dict>
-			<key>cell</key>                 <string>PSSliderCell</string>
-			<key>cellClass</key>            <string>SLSliderCell</string>
-			<key>defaults</key>             <string>com.insanj.sleepyalarm</string>
-		   <key>key</key> 			    	<string>timesAmount</string>
-			<key>id</key> 			     	<string>TimesSlider</string>
-			<key>leftImage</key> 		    <string>crescent.png</string>
-			<key>rightImage</key> 	     	<string>fullmoon.png</string>
-			<key>min</key> 			    	<real>5</real>
-			<key>max</key> 			    	<real>11</real>
-			<key>default</key> 		    	<real>8</real>
+			<key>cellClass</key> 			<string>SLStepperTableCell</string>
+			<key>default</key> 				<real>8</real>
+			<key>defaults</key> 			<string>com.insanj.sleepyalarm</string>
+			<key>key</key> 					<string>timeAmount</string>
+			<key>id</key> 					<string>TimeSlider</string>
+			<key>label</key> 				<string>%i Times</string>
+			<key>max</key> 					<real>20</real>
+			<key>min</key> 					<real>5</real>
+			<key>singularLabel</key> 		<string>1 Time</string>
 		</dict>
 
 		<dict>
 			<key>cell</key>			     <string>PSGroupCell</string>
 			<key>label</key>		     <string>Wait</string>
-			<key>footerText</key> 	      <string>How short (left) or long (right) does it take you to fall asleep?</string>
+			<key>footerText</key> 	      <string>How short or long does it take you to fall asleep?</string>
 		</dict>
 
 		<dict>
-			<key>cell</key>				<string>PSSliderCell</string>
-		<key>cellClass</key>            <string>SLSliderCell</string>
-			<key>defaults</key>			<string>com.insanj.sleepyalarm</string>
-			<key>key</key> 				<string>waitAmount</string>
-			<key>id</key> 				<string>WaitSlider</string>
-			<key>leftImage</key> 		<string>oppossum.png</string>
-			<key>rightImage</key> 		<string>bat.png</string>
-			<key>min</key> 				<real>10</real>
-			<key>max</key> 				<real>20</real>
-			<key>default</key> 			<real>14</real>
+			<key>cellClass</key> 			<string>SLStepperTableCell</string>
+			<key>default</key> 				<real>14</real>
+			<key>defaults</key> 			<string>com.insanj.sleepyalarm</string>
+			<key>key</key> 					<string>waitAmount</string>
+			<key>key</key> 					<string>WaitSlider</string>
+			<key>label</key> 				<string>%i Minute Wait</string>
+			<key>max</key> 					<real>60</real>
+			<key>min</key> 					<real>1</real>
+			<key>singularLabel</key> 		<string>1 Minute Wait</string>
 		</dict>
+		
 
 		<dict>
 			<key>cell</key>			     <string>PSGroupCell</string>
@@ -70,14 +69,16 @@
 
 		<dict>
 			<key>cell</key>				<string>PSGroupCell</string>
-			<key>footerText</key>	    <string>© 2014 Julian (insanj) Weiss</string>
+			<key>footerText</key>	    <string>© 2014-2015 Julian (insanj) Weiss</string>
 		</dict>
 
-		<dict>
-			<key>cell</key> 		  	<string>PSStaticTextCell</string>
-			<key>cellClass</key> 	 	<string>SLDoubleButtonCell</string>
-			<key>height</key> 			<integer>80</integer>
-		</dict>
+	  	<dict>
+	  		<key>big</key> 				<true/>
+	  		<key>cellClass</key> 		<string>SLTwitterTableCell</string>
+	  		<key>height</key> 			<integer>56</integer>
+	  		<key>label</key> 			<string>Julian Weiss</string>
+	  		<key>user</key> 			<string>insanj</string>
+	  	</dict>
 
 	</array>
 	<key>title</key>	<string>SleepyAlarm</string>

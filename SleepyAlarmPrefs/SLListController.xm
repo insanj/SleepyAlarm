@@ -1,6 +1,5 @@
 #import "SLListController.h"
 #import "SLBannerButtonCell.h"
-#import "SLDoubleButtonCell.h"
 #import "version.h"
 
 #define URL_ENCODE(string) [(NSString *)CFURLCreateStringByAddingPercentEscapes(kCFAllocatorDefault, (CFStringRef)(string), NULL, CFSTR(":/=,!$& '()*+;[]@#?"), kCFStringEncodingUTF8) autorelease]
@@ -37,6 +36,7 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 	
 	[UISwitch appearanceWhenContainedIn:self.class, nil].onTintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
 	[UITableViewCell appearanceWhenContainedIn:self.class, nil].backgroundColor = [UIColor colorWithWhite:0.1 alpha:1.0];
+	[UILabel appearanceWhenContainedIn:self.class, nil].textColor = [UIColor whiteColor];
 
 	[self table].backgroundColor = [UIColor blackColor];
 	[self table].tintColor = [UIColor colorWithRed:51/255.0f green:55/255.0f blue:144/255.0f alpha:1.0f];
@@ -98,29 +98,6 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 	}
 }
 
-- (void)twitterTapped {
-	NSString *user = @"insanj";
-	if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetbot:"]]) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetbot:///user_profile/" stringByAppendingString:user]]];
-	}
-
-	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitterrific:"]]) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitterrific:///profile?screen_name="  stringByAppendingString:user]]];
-	}
-
-	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"tweetings:"]]) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"tweetings:///user?screen_name=" stringByAppendingString:user]]];
-	}
-
-	else if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"twitter:"]]) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"twitter://user?screen_name=" stringByAppendingString:user]]];
-	}
-
-	else {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:[@"https://mobile.twitter.com/" stringByAppendingString:user]]];
-	}
-}
-
 - (id)tableView:(id)arg1 cellForRowAtIndexPath:(id)arg2 {
 	PSTableCell *cell = (PSTableCell *)[super tableView:arg1 cellForRowAtIndexPath:arg2];
 	if (cell.type == PSSwitchCell) {
@@ -128,24 +105,6 @@ static NSString *kSleepyAlarmTimeAmountKey = @"timesAmount", *kSleepyAlarmWaitAm
 	}
 
 	return cell;
-}
-
-- (void)reset {
-	HBPreferences *preferences = [%c(HBPreferences) preferencesForIdentifier:@"com.insanj.sleepyalarm"];
-	[preferences setInteger:8 forKey:kSleepyAlarmTimeAmountKey];
-	[preferences setFloat:14.0 forKey:kSleepyAlarmWaitAmountKey];
-	[preferences setBool:NO forKey:kSleepyAlarmUseAlarmsKey];
-	[preferences synchronize];
-
-	PSSpecifier *timesSpecifier = [self specifierForID:@"TimesSlider"];
-	[self reloadSpecifier:timesSpecifier animated:YES];
-
-	PSSpecifier *waitSpecifier = [self specifierForID:@"WaitSlider"];
-	[self reloadSpecifier:waitSpecifier animated:YES];
-
-	PSSpecifier *moonsSpecifier = [self specifierForID:@"MoonSwitch"];
-	[self setPreferenceValue:@(NO) specifier:moonsSpecifier];
-	[self reloadSpecifier:moonsSpecifier animated:YES];
 }
 
 - (void)reloadMoonsSafePreferences {

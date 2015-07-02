@@ -9,8 +9,7 @@ SleepyAlarmPrefs_FILES = SLListController.xm $(wildcard *.m)
 SleepyAlarmPrefs_INSTALL_PATH = /Library/PreferenceBundles
 SleepyAlarmPrefs_FRAMEWORKS = UIKit CoreGraphics MessageUI QuartzCore
 SleepyAlarmPrefs_PRIVATE_FRAMEWORKS = Preferences BulletinBoard
-SleepyAlarmPrefs_LIBRARIES = cephei
-UIDiscreteSlider.m_CFLAGS = -fobjc-arc
+SleepyAlarmPrefs_LIBRARIES = cephei cepheiprefs
 
 include $(THEOS_MAKE_PATH)/bundle.mk
 
