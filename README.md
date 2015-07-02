@@ -1,13 +1,11 @@
 # [SleepyAlarm](http://insanj.github.io/SleepyAlarm)
 
-Sleep better with your Alarms. Details and information available on [the official website](http://insanj.github.io/SleepyAlarm). Created and designed by [Julian Weiss](http://twitter.com/insanj), graphics entirely by [Kyle Paul](http://twitter.com/Pronounced_Nor).
-
-Currently supports all devices and versions of iOS 7 — 8.
+Easily calculate the healthiest & most comfortable time to wake up, right from the Clock app. More information available on [the official website](http://insanj.github.io/SleepyAlarm). Created and designed by [Julian Weiss](http://twitter.com/insanj). Logo created by [Kyle Paul](http://twitter.com/Pronounced_Nor). **Fully supports all devices and versions of iOS 7-8.**
 
 ## [License](LICENSE.md)
 
 	SleepyAlarm: Sleep better with your Alarms
-	Copyright (C) 2014  Julian (insanj) Weiss
+	Copyright (C) 2014-2015  Julian (insanj) Weiss
 	
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
